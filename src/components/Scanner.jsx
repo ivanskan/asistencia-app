@@ -1,35 +1,24 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useEffect } from "react";
 
-function Scanner({ onScan }) {
+export default function Scanner({ onScan }) {
   useEffect(() => {
     const scanner = new Html5QrcodeScanner(
       "reader",
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 80 }, // 🔥 RECTÁNGULO tipo código barras
-        aspectRatio: 1.8
-      },
+      { fps: 10, qrbox: 200 },
       false
     );
 
     scanner.render(
       (decodedText) => {
-        onScan(decodedText);
+        const dni = decodedText.replace(/\D/g, "");
+        onScan(dni);
       },
       () => {}
     );
 
-    return () => {
-      scanner.clear().catch(() => {});
-    };
+    return () => scanner.clear();
   }, []);
 
-  return (
-    <div className="scanner-container">
-      <div id="reader"></div>
-    </div>
-  );
+  return <div id="reader"></div>;
 }
-
-export default Scanner;

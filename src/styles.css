@@ -29,7 +29,7 @@ tbody tr:hover {
 /* SCANNER */
 #reader {
   width: 100%;
-  max-width: 350px;
+  max-width: 380px;
   margin: auto;
 }
 
@@ -39,41 +39,4 @@ tbody tr:hover {
   flex-wrap: wrap;
   gap: 10px;
   font-size: 0.9rem;
-}
-
-.scanner-container {
-  position: relative;
-  margin-bottom: 10px;
-}
-
-/* reduce tamaño general */
-#reader {
-  width: 100% !important;
-}
-
-/* 🔥 overlay oscuro */
-#reader video {
-  border-radius: 10px;
-}
-
-/* simular enfoque tipo scanner */
-#reader::after {
-  content: "";
-  position: absolute;
-  top: 35%;
-  left: 10%;
-  width: 80%;
-  height: 80px;
-  border: 2px solid #00ff88;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0,255,136,0.6);
-}
-
-/* opcional: oscurecer alrededor */
-#reader::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.3);
-  pointer-events: none;
 }
