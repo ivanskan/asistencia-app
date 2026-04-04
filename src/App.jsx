@@ -25,7 +25,7 @@ function App() {
     audioRef.current.currentTime = 0;
     audioRef.current.play().catch(() => {});
   };
-  
+
   // IMPORTAR
   const importarExcel = (e) => {
     const file = e.target.files[0];
@@ -177,6 +177,17 @@ function App() {
 
       <input type="file" onChange={importarExcel} className="form-control mb-3"/>
 
+      {mensaje && (
+        <div className={`w-100 d-flex justify-content-center alert mt-2 ${
+          mensaje.tipo === "ok" ? "alert-success" :
+          mensaje.tipo === "warning" ? "alert-warning" :
+          "alert-danger"
+        }`}>
+          <pre style={{margin:0}}>{mensaje.texto}</pre>
+        </div>
+      )}
+
+
       {/* INPUT + BOTÓN */}
       <div className="d-flex gap-2 mb-3">
         <input
@@ -247,20 +258,11 @@ function App() {
       {mostrarScanner && <Scanner onScan={marcarAsistencia} />}
 
       {/* MENSAJE VISUAL */}
-      {mensaje && (
-        <div className={`alert mt-2 text-center ${
-          mensaje.tipo === "ok" ? "alert-success" :
-          mensaje.tipo === "warning" ? "alert-warning" :
-          "alert-danger"
-        }`}>
-          <pre style={{margin:0}}>{mensaje.texto}</pre>
-        </div>
-      )}
-
+    
       <div className="resumen alert alert-info">
-        <span><b>Total:</b> {total}</span>
-        <span><b>Presentes:</b> {presentes}</span>
-        <span><b>Adicionales:</b> {adicionales}</span>
+        <span className="text-black"><b>Total:</b> {total}</span>
+        <span className="text-success"><b>Presentes:</b> {presentes}</span>
+        <span className="text-danger"><b>Adicionales:</b> {adicionales}</span>
       </div>
 
       <div className="table-responsive">
