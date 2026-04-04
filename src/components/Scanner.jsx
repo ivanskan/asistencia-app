@@ -9,7 +9,7 @@ export default function Scanner({ onScan }) {
       "reader",
       {
         fps: 10,
-        qrbox: { width: 250, height: 80 } // 👈 formato horizontal
+        qrbox: 250,
       },
       false
     );
