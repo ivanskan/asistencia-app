@@ -5,7 +5,9 @@ export default function Scanner({ onScan }) {
   useEffect(() => {
     const scanner = new Html5QrcodeScanner(
       "reader",
-      { fps: 10, qrbox: 200 },
+      // { fps: 10, qrbox: 250 },
+       { fps: 10, qrbox: { width: 250, height: 80 }, aspectRatio: 1.8},
+   
       false
     );
 
