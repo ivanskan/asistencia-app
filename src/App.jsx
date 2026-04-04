@@ -16,12 +16,16 @@ function App() {
 
   const ultimoScan = useRef("");
 
+  const audioRef = useRef(null);
   // 🔊 sonido
   const beep = () => {
-    const audio = new Audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3");
-    audio.play();
+    if (!audioRef.current) {
+      audioRef.current = new Audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3");
+    }
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
   };
-
+  
   // IMPORTAR
   const importarExcel = (e) => {
     const file = e.target.files[0];
@@ -35,10 +39,9 @@ function App() {
       const data = filas.map((row, i) => ({
         item: i + 1,
         dni: String(row["DNI"] || "").trim(),
-        nombre: row["APELLIDOS Y NOMBRES"] || "",
+        nombre: row["NOMBRE"] || "",
         curso: row["CURSO"] || "",
         empresa: row["EMPRESA"] || "",
-        puesto: row["PUESTO DE TRABAJO"] || "",
         asistencia: "",
         fuente: "excel",
         hora: null
@@ -53,6 +56,7 @@ function App() {
   // REGISTRAR (FIX PRO)
   const marcarAsistencia = (dniRaw) => {
     const dni = dniRaw.replace(/\D/g, "");
+    setDniInput(dni); // 👈 AGREGA ESTO
 
     // evitar doble scan
     if (dni === ultimoScan.current) return;
