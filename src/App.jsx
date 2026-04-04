@@ -91,18 +91,18 @@ function App() {
 
       // MENSAJES
       if (!encontrado) {
-        setMensaje({ tipo: "error", texto: `❌ DNI ${dni} no encontrado` });
+        setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
         vibrar("error");
       } else if (ya) {
         setMensaje({
           tipo: "warning",
-          texto: `⚠️ Ya registrado\n${persona.nombre}`
+          texto: `⚠️ Ya registrado: DNI: ${dni}\n👦 ${persona.nombre}\n📚 ${persona.curso}`
         });
         vibrar("warning");
       } else {
         setMensaje({
           tipo: "ok",
-          texto: `✅ ${persona.nombre}\n📚 ${persona.curso}\n🆔 ${dni}`
+          texto: `✅ DNI: ${dni}\n👦 ${persona.nombre}\n📚 ${persona.curso}`
         });
         vibrar("ok");
       }
