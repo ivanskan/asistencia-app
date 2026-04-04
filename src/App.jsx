@@ -16,14 +16,16 @@ function App() {
 
   const ultimoScan = useRef("");
 
-  const audioRef = useRef(null);
-  // 🔊 sonido
-  const beep = () => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3");
+  const vibrar = (tipo = "ok") => {
+    if (!navigator.vibrate) return;
+
+    if (tipo === "ok") {
+      navigator.vibrate(100);
+    } else if (tipo === "error") {
+      navigator.vibrate([100, 50, 100]);
+    } else if (tipo === "warning") {
+      navigator.vibrate([50, 50, 50]);
     }
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(() => {});
   };
 
   // IMPORTAR
@@ -38,7 +40,7 @@ function App() {
 
       const data = filas.map((row, i) => ({
         item: i + 1,
-        dni: String(row["DNI"] || "").trim(),
+        dni: String(row["DNI"] || "").trim().toUpperCase(),
         nombre: row["NOMBRE"] || "",
         curso: row["CURSO"] || "",
         empresa: row["EMPRESA"] || "",
@@ -55,7 +57,7 @@ function App() {
 
   // REGISTRAR (FIX PRO)
   const marcarAsistencia = (dniRaw) => {
-    const dni = dniRaw.replace(/\D/g, "");
+    const dni = dniRaw.trim().toUpperCase();
     setDniInput(dni); // 👈 AGREGA ESTO
 
     // evitar doble scan
@@ -90,17 +92,19 @@ function App() {
       // MENSAJES
       if (!encontrado) {
         setMensaje({ tipo: "error", texto: `❌ DNI ${dni} no encontrado` });
+        vibrar("error");
       } else if (ya) {
         setMensaje({
           tipo: "warning",
           texto: `⚠️ Ya registrado\n${persona.nombre}`
         });
+        vibrar("warning");
       } else {
         setMensaje({
           tipo: "ok",
           texto: `✅ ${persona.nombre}\n📚 ${persona.curso}\n🆔 ${dni}`
         });
-        beep();
+        vibrar("ok");
       }
 
       setTimeout(() => setMensaje(null), 2000);
@@ -119,7 +123,7 @@ function App() {
   // AGREGAR
   const guardarNuevo = () => {
     if (!nuevo.dni || !nuevo.nombre) {
-      setMensaje({ tipo: "error", texto: "❌ DNI y nombre obligatorios" });
+      setMensaje({ tipo: "error", texto: "❌ DNI y Nombre obligatorios" });
       return;
     }
 
