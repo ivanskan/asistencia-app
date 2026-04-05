@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import * as XLSX from "xlsx";
 import Scanner from "./components/Scanner";
 import { db } from "./firebase";
+import logo from "/src/assets/ERS-logo.png";
+import logoMin from "/src/assets/ERS-logo-min.png";
 import {
   collection,
   addDoc,
@@ -249,9 +251,13 @@ const guardarNuevo = async () => {
   return (
     <div className="container py-3">
 
-      <h4 className="text-center mb-3">ASISTENCIA ERS</h4>
+      <div className="mb-1">
+        <img src={logo} alt="logo" className="d-none d-sm-block" style={{ height: "50px" }}/>
+        <img src={logoMin}alt="logo" className="d-block d-sm-none" style={{ height: "45px" }}/>
+      </div>
+      <h4 className="mb-4 text-center fw-bold text-primary">ASISTENCIA ERS</h4>
 
-      <div className="d-flex mb-2">
+      <div className="d-flex mb-3">
         <input type="file" onChange={importarExcel} className="form-control"/>
         <button className="btn btn-warning ms-2" onClick={subirProgramados}>
           <span className="fw-semibold">☁️&nbsp;Subir</span>
@@ -284,7 +290,7 @@ const guardarNuevo = async () => {
         <div className="d-flex gap-2">
           <button className="btn btn-primary p-1" onClick={() => setMostrarScanner(!mostrarScanner)}>
             <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M213.1 128.8L202.7 160L128 160C92.7 160 64 188.7 64 224L64 480C64 515.3 92.7 544 128 544L512 544C547.3 544 576 515.3 576 480L576 224C576 188.7 547.3 160 512 160L437.3 160L426.9 128.8C420.4 109.2 402.1 96 381.4 96L258.6 96C237.9 96 219.6 109.2 213.1 128.8zM320 256C373 256 416 299 416 352C416 405 373 448 320 448C267 448 224 405 224 352C224 299 267 256 320 256z"/></svg>
-            <span className="fw-semibold ps-1">Scanear</span>
+            <span className="fw-semibold ps-1">Scanner</span>
           </button>
           <button className="btn btn-success p-1"
             onClick={() => {

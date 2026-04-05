@@ -3,29 +3,6 @@ body {
   background-color: #f9f9f9;
 }
 
-/* TABLA */
-.table th {
-  color: rgb(33, 85, 180);
-  background: #f1f1f1;
-}
-
-td {
-  text-transform: capitalize;
-}
-
-tbody tr:hover {
-  background-color: #e6f7ff;
-}
-
-/* FILAS */
-.fila-presente {
-  background-color: #d1e7dd !important;
-}
-
-.fila-adicional {
-  background-color: #fff3cd !important;
-}
-
 /* SCANNER */
 #reader {
   width: 100%;
