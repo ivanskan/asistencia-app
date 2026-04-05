@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import * as XLSX from "xlsx";
 import Scanner from "./components/Scanner";
 import { db } from "./firebase";
@@ -238,6 +238,14 @@ const guardarNuevo = async () => {
   const presentes = lista.filter(p => p.asistencia === "Presente").length;
   const adicionales = lista.filter(p => p.asistencia === "Adicional").length;
 
+  const programadosOrdenados = useMemo(() => {
+  return [...programados].sort((a, b) => {
+    const nombreA = (a?.nombre || "").toString();
+    const nombreB = (b?.nombre || "").toString();
+    return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
+  });
+}, [programados]);
+
   return (
     <div className="container py-3">
 
@@ -359,7 +367,8 @@ const guardarNuevo = async () => {
           <tbody>
 
             {/* PROGRAMADOS */}
-            {programados.map((p, i) => {
+            
+            {programadosOrdenados.map((p, i) => {
               const asistente = lista.find(a => a.dni === p.dni);
 
               return (
