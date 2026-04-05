@@ -7,29 +7,28 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.png'],
       manifest: {
         name: 'Asistencia ERS',
-        short_name: 'ERS',
-        description: 'Control de asistencia',
+        short_name: 'Asistencia',
+        description: 'Control de asistencia con QR',
         theme_color: '#0d6efd',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         icons: [
           {
-            src: '/icon.png',
+            src: 'icon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icon.png',
+            src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png'
           }
         ]
       }
-    }),
+    })
   ],
    server: {
     host: true
