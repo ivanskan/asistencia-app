@@ -8,7 +8,8 @@ import {
   onSnapshot,
   query,
   where,
-  getDocs
+  getDocs, 
+  deleteDoc 
 } from "firebase/firestore";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
   const [mensaje, setMensaje] = useState(null);
   const [dniInput, setDniInput] = useState("");
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [errorForm, setErrorForm] = useState(null);
 
   const [nuevo, setNuevo] = useState({
     dni: "",
@@ -84,19 +86,39 @@ function App() {
   };
 
   // ☁️ SUBIR EXCEL A FIREBASE
-  const subirProgramados = async () => {
-    try {
-      for (const p of baseExcel) {
-        await addDoc(collection(db, "programados"), p);
-      }
 
-      setMensaje({ tipo: "ok", texto: "☁️ Programados subidos" });
-      setTimeout(() => setMensaje(null), 2000);
+const subirProgramados = async () => {
+  if (baseExcel.length === 0) {
+    setMensaje({ tipo: "error", texto: "❌ No hay datos cargados" });
+    return;
+  }
 
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    // 🔥 eliminar anteriores
+    const snapshot = await getDocs(collection(db, "programados"));
+    await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
+
+    // 🔥 subir TODOS en paralelo (CLAVE)
+    await Promise.all(
+      baseExcel.map(p =>
+        addDoc(collection(db, "programados"), p)
+      )
+    );
+
+    setMensaje({
+      tipo: "ok",
+      texto: `☁️ ${baseExcel.length} programados subidos`
+    });
+
+    setBaseExcel([]);
+
+  } catch (err) {
+    console.error("🔥 ERROR SUBIDA:", err);
+    setMensaje({ tipo: "error", texto: "❌ Error subiendo datos" });
+  }
+
+  setTimeout(() => setMensaje(null), 2000);
+};
 
   // ✅ REGISTRAR
   const marcarAsistencia = async (dniRaw) => {
@@ -116,7 +138,7 @@ function App() {
 
         setMensaje({
           tipo: "warning",
-          texto: `⚠️ Ya registrado\n${docData.nombre}`
+          texto: `⚠️ Ya registrado: ${docData.nombre}\n📚 ${docData.curso}\n🆔 ${docData.dni}`
         });
 
         vibrar("warning");
@@ -127,7 +149,7 @@ function App() {
       const persona = programados.find(p => p.dni === dni);
 
       if (!persona) {
-        setMensaje({ tipo: "error", texto: `❌ DNI ${dni} no encontrado` });
+        setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
         vibrar("error");
         setTimeout(() => setMensaje(null), 2000);
         return;
@@ -164,33 +186,35 @@ function App() {
   };
 
   // ➕ AGREGAR
-  const guardarNuevo = async () => {
-    if (!nuevo.dni || !nuevo.nombre) {
-      setMensaje({ tipo: "error", texto: "❌ DNI y Nombre obligatorios" });
-      setTimeout(() => setMensaje(null), 2000);
-      return;
-    }
+const guardarNuevo = async () => {
+ if (!nuevo.dni || !nuevo.nombre || !nuevo.curso || !nuevo.empresa) {
+  setErrorForm("❌ Todos los campos son obligatorios");
 
-    await addDoc(collection(db, "asistencia"), {
-      dni: nuevo.dni.toUpperCase(),
-      nombre: nuevo.nombre,
-      curso: nuevo.curso,
-      empresa: nuevo.empresa,
-      asistencia: "Adicional",
-      hora: new Date().toLocaleTimeString(),
-      fecha: new Date().toISOString()
-    });
+  setTimeout(() => setErrorForm(null), 2000); // 👈 auto desaparece
+  return;
+}
+  setErrorForm(null);
 
-    setMensaje({
-      tipo: "ok",
-      texto: `✅ Agregado: ${nuevo.nombre}`
-    });
+  await addDoc(collection(db, "asistencia"), {
+    dni: nuevo.dni.toUpperCase(),
+    nombre: nuevo.nombre,
+    curso: nuevo.curso,
+    empresa: nuevo.empresa,
+    asistencia: "Adicional",
+    hora: new Date().toLocaleTimeString(),
+    fecha: new Date().toISOString()
+  });
 
-    setTimeout(() => setMensaje(null), 2000);
+  setMensaje({
+    tipo: "ok",
+    texto: `✅ Agregado: ${nuevo.nombre}`
+  });
 
-    setNuevo({ dni: "", nombre: "", curso: "", empresa: "" });
-    setMostrarModal(false);
-  };
+  setTimeout(() => setMensaje(null), 2000);
+
+  setNuevo({ dni: "", nombre: "", curso: "", empresa: "" });
+  setMostrarModal(false);
+};
 
   // ⬇ EXPORTAR
   const exportar = () => {
@@ -217,16 +241,16 @@ function App() {
   return (
     <div className="container py-3">
 
-      <h4 className="text-center mb-3">Asistencia ERS</h4>
+      <h4 className="text-center mb-3">ASISTENCIA ERS</h4>
 
-      <input type="file" onChange={importarExcel} className="form-control mb-2"/>
-
-      <button className="btn btn-warning mb-3 w-100" onClick={subirProgramados}>
-        ☁️ Subir Programados
-      </button>
-
+      <div className="d-flex mb-2">
+        <input type="file" onChange={importarExcel} className="form-control"/>
+        <button className="btn btn-warning ms-2" onClick={subirProgramados}>
+          <span className="fw-semibold">☁️&nbsp;Subir</span>
+        </button>
+      </div>
       {mensaje && (
-        <div className={`alert text-center ${
+        <div className={`alert d-flex justify-content-center ${
           mensaje.tipo === "ok" ? "alert-success" :
           mensaje.tipo === "warning" ? "alert-warning" :
           "alert-danger"
@@ -244,23 +268,31 @@ function App() {
           onKeyDown={(e) => e.key === "Enter" && handleManual()}
         />
         <button className="btn btn-primary" onClick={handleManual}>
-          ✔
+          <span className="fw-semibold"> ✔&nbsp;Registrar</span>
         </button>
       </div>
 
       <div className="d-flex gap-2 mb-3 justify-content-between">
         <div className="d-flex gap-2">
-          <button className="btn btn-primary" onClick={() => setMostrarScanner(!mostrarScanner)}>
-            📸
+          <button className="btn btn-primary p-1" onClick={() => setMostrarScanner(!mostrarScanner)}>
+            <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M213.1 128.8L202.7 160L128 160C92.7 160 64 188.7 64 224L64 480C64 515.3 92.7 544 128 544L512 544C547.3 544 576 515.3 576 480L576 224C576 188.7 547.3 160 512 160L437.3 160L426.9 128.8C420.4 109.2 402.1 96 381.4 96L258.6 96C237.9 96 219.6 109.2 213.1 128.8zM320 256C373 256 416 299 416 352C416 405 373 448 320 448C267 448 224 405 224 352C224 299 267 256 320 256z"/></svg>
+            <span className="fw-semibold ps-1">Scanear</span>
           </button>
-          <button className="btn btn-success" onClick={() => setMostrarModal(true)}>
-            ➕
+          <button className="btn btn-success p-1"
+            onClick={() => {
+              setNuevo({ dni: "", nombre: "", curso: "", empresa: "" }); // limpiar
+              setErrorForm(null); // limpiar error
+              setMostrarModal(true);
+            }}>
+            <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>
+            <span className="fw-semibold ps-1">Agregar</span>
           </button>
         </div>
 
-        <button className="btn btn-dark" onClick={exportar}>
-          ⬇
+        <button className="btn btn-dark p-1" onClick={exportar}>
+            <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M352 96C352 78.3 337.7 64 320 64C302.3 64 288 78.3 288 96L288 306.7L246.6 265.3C234.1 252.8 213.8 252.8 201.3 265.3C188.8 277.8 188.8 298.1 201.3 310.6L297.3 406.6C309.8 419.1 330.1 419.1 342.6 406.6L438.6 310.6C451.1 298.1 451.1 277.8 438.6 265.3C426.1 252.8 405.8 252.8 393.3 265.3L352 306.7L352 96zM160 384C124.7 384 96 412.7 96 448L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 448C544 412.7 515.3 384 480 384L433.1 384L376.5 440.6C345.3 471.8 294.6 471.8 263.4 440.6L206.9 384L160 384zM464 440C477.3 440 488 450.7 488 464C488 477.3 477.3 488 464 488C450.7 488 440 477.3 440 464C440 450.7 450.7 440 464 440z"/></svg>               
         </button>
+       
       </div>
 
       {mostrarScanner && <Scanner onScan={marcarAsistencia} />}
@@ -271,6 +303,11 @@ function App() {
           <div className="modal-dialog">
             <div className="modal-content p-3">
               <h5>Nuevo participante</h5>
+              {errorForm && (
+                <div className="alert alert-danger py-2">
+                  {errorForm}
+                </div>
+              )}
 
               <input className="form-control mb-2" placeholder="DNI"
                 value={nuevo.dni}
