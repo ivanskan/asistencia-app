@@ -218,12 +218,12 @@ function App() {
     <div className="container py-3">
 
       <h4 className="text-center mb-3">Asistencia ERS</h4>
-      <div className="d-flex mb-3">
-        <input type="file" onChange={importarExcel} className="form-control"/>
-        <button className="btn btn-warning ms-2" style={{width: 150}} onClick={subirProgramados}>
-          ☁️ Upload
-        </button>
-      </div>
+
+      <input type="file" onChange={importarExcel} className="form-control mb-2"/>
+
+      <button className="btn btn-warning mb-3 w-100" onClick={subirProgramados}>
+        ☁️ Subir Programados
+      </button>
 
       {mensaje && (
         <div className={`alert text-center ${
