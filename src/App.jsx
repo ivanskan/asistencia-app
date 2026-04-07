@@ -144,7 +144,7 @@ const subirProgramados = async () => {
         });
 
         vibrar("warning");
-        setTimeout(() => setMensaje(null), 2000);
+        // setTimeout(() => setMensaje(null), 2000);
         return;
       }
 
