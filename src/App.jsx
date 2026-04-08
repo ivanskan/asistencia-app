@@ -16,24 +16,26 @@ import {
 
 function App() {
   const [baseExcel, setBaseExcel] = useState([]); // programados (local)
-  const [programados, setProgramados] = useState([]); // 🔥 firebase
+  const [programados, setProgramados] = useState([]); // firebase
   const [lista, setLista] = useState([]); // asistencia
   const [mostrarScanner, setMostrarScanner] = useState(false);
   const [mensaje, setMensaje] = useState(null);
   const [dniInput, setDniInput] = useState("");
   const [mostrarModal, setMostrarModal] = useState(false);
   const [errorForm, setErrorForm] = useState(null);
-
+  const [ordenCampo, setOrdenCampo] = useState("nombre");
+  const [ordenDireccion, setOrdenDireccion] = useState("asc");
   const [nuevo, setNuevo] = useState({
     dni: "",
     nombre: "",
     curso: "",
-    empresa: ""
+    empresa: "",
+    aula: ""
   });
 
   const ultimoScan = useRef("");
 
-  // 🔄 ESCUCHAR PROGRAMADOS
+  // ESCUCHAR PROGRAMADOS
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "programados"), (snapshot) => {
       const datos = snapshot.docs.map(doc => doc.data());
@@ -43,7 +45,7 @@ function App() {
     return () => unsub();
   }, []);
 
-  // 🔄 ESCUCHAR ASISTENCIA
+  // ESCUCHAR ASISTENCIA
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "asistencia"), (snapshot) => {
       const datos = snapshot.docs.map(doc => ({
@@ -56,7 +58,7 @@ function App() {
     return () => unsub();
   }, []);
 
-  // 📳 Vibración
+  // Vibración
   const vibrar = (tipo = "ok") => {
     if (!navigator.vibrate) return;
     if (tipo === "ok") navigator.vibrate(100);
@@ -64,7 +66,7 @@ function App() {
     else navigator.vibrate([50, 50, 50]);
   };
 
-  // 📂 IMPORTAR EXCEL (LOCAL)
+  // IMPORTAR EXCEL (LOCAL)
   const importarExcel = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -78,7 +80,8 @@ function App() {
         dni: String(row["DNI"] || "").trim().toUpperCase(),
         nombre: row["NOMBRE"] || "",
         curso: row["CURSO"] || "",
-        empresa: row["EMPRESA"] || ""
+        empresa: row["EMPRESA"] || "",
+        aula: row["AULA"] || ""
       }));
 
       setBaseExcel(data);
@@ -96,11 +99,11 @@ const subirProgramados = async () => {
   }
 
   try {
-    // 🔥 eliminar anteriores
+    // eliminar anteriores
     const snapshot = await getDocs(collection(db, "programados"));
     await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
 
-    // 🔥 subir TODOS en paralelo (CLAVE)
+    // subir TODOS en paralelo (CLAVE)
     await Promise.all(
       baseExcel.map(p =>
         addDoc(collection(db, "programados"), p)
@@ -122,9 +125,13 @@ const subirProgramados = async () => {
   setTimeout(() => setMensaje(null), 2000);
 };
 
-  // ✅ REGISTRAR
+  // REGISTRAR
   const marcarAsistencia = async (dniRaw) => {
     const dni = dniRaw.trim().toUpperCase();
+    // solo números y longitud exacta
+    if (!/^\d{8}$/.test(dni)) {
+      return;
+    }
     setDniInput(dni);
 
     if (dni === ultimoScan.current) return;
@@ -140,7 +147,7 @@ const subirProgramados = async () => {
 
         setMensaje({
           tipo: "warning",
-          texto: `⚠️ Ya registrado: ${docData.nombre}\n📚 ${docData.curso}\n🆔 ${docData.dni}`
+          texto: `📚 ${docData.curso} - AULA ${docData.aula} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
         });
 
         vibrar("warning");
@@ -153,7 +160,7 @@ const subirProgramados = async () => {
       if (!persona) {
         setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
         vibrar("error");
-        setTimeout(() => setMensaje(null), 2000);
+        // setTimeout(() => setMensaje(null), 2000);
         return;
       }
 
@@ -162,6 +169,7 @@ const subirProgramados = async () => {
         nombre: persona.nombre,
         curso: persona.curso,
         empresa: persona.empresa || "",
+        aula: persona.aula || "",
         asistencia: "Presente",
         hora: new Date().toLocaleTimeString(),
         fecha: new Date().toISOString()
@@ -169,14 +177,14 @@ const subirProgramados = async () => {
 
       setMensaje({
         tipo: "ok",
-        texto: `✅ ${persona.nombre}\n📚 ${persona.curso}\n🆔 ${dni}`
+        texto: `📚 ${persona.curso} - AULA ${persona.aula} \n😎 ${persona.nombre}\n🆔 ${dni}`
       });
 
       vibrar("ok");
 
     } catch (error) {
       console.error(error);
-      setMensaje({ tipo: "error", texto: "❌ Error Firebase" });
+      setMensaje({ tipo: "error", texto: "❌ Error BD" });
       setTimeout(() => setMensaje(null), 2000);
     }
   };
@@ -187,9 +195,9 @@ const subirProgramados = async () => {
     setDniInput("");
   };
 
-  // ➕ AGREGAR
+  // AGREGAR
 const guardarNuevo = async () => {
- if (!nuevo.dni || !nuevo.nombre || !nuevo.curso || !nuevo.empresa) {
+ if (!nuevo.dni || !nuevo.nombre || !nuevo.curso || !nuevo.empresa || !nuevo.aula) {
   setErrorForm("❌ Todos los campos son obligatorios");
 
   setTimeout(() => setErrorForm(null), 2000); // 👈 auto desaparece
@@ -202,6 +210,7 @@ const guardarNuevo = async () => {
     nombre: nuevo.nombre,
     curso: nuevo.curso,
     empresa: nuevo.empresa,
+    aula: nuevo.aula,
     asistencia: "Adicional",
     hora: new Date().toLocaleTimeString(),
     fecha: new Date().toISOString()
@@ -214,7 +223,7 @@ const guardarNuevo = async () => {
 
   setTimeout(() => setMensaje(null), 2000);
 
-  setNuevo({ dni: "", nombre: "", curso: "", empresa: "" });
+  setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" });
   setMostrarModal(false);
 };
 
@@ -225,6 +234,7 @@ const guardarNuevo = async () => {
       NOMBRE: p.nombre,
       CURSO: p.curso,
       EMPRESA: p.empresa,
+      AULA: p.aula,
       ASISTENCIA: p.asistencia,
       HORA: p.hora
     }));
@@ -240,13 +250,35 @@ const guardarNuevo = async () => {
   const presentes = lista.filter(p => p.asistencia === "Presente").length;
   const adicionales = lista.filter(p => p.asistencia === "Adicional").length;
 
-  const programadosOrdenados = useMemo(() => {
+//   const programadosOrdenados = useMemo(() => {
+//   return [...programados].sort((a, b) => {
+//     const nombreA = (a?.nombre || "").toString();
+//     const nombreB = (b?.nombre || "").toString();
+//     return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
+//   });
+// }, [programados]);
+
+const programadosOrdenados = useMemo(() => {
   return [...programados].sort((a, b) => {
-    const nombreA = (a?.nombre || "").toString();
-    const nombreB = (b?.nombre || "").toString();
-    return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
+    const valorA = (a?.[ordenCampo] || "").toString().toLowerCase();
+    const valorB = (b?.[ordenCampo] || "").toString().toLowerCase();
+
+    if (ordenDireccion === "asc") {
+      return valorA.localeCompare(valorB, "es", { sensitivity: "base" });
+    } else {
+      return valorB.localeCompare(valorA, "es", { sensitivity: "base" });
+    }
   });
-}, [programados]);
+}, [programados, ordenCampo, ordenDireccion]);
+
+const cambiarOrden = (campo) => {
+  if (ordenCampo === campo) {
+    setOrdenDireccion(ordenDireccion === "asc" ? "desc" : "asc");
+  } else {
+    setOrdenCampo(campo);
+    setOrdenDireccion("asc");
+  }
+};
 
   return (
     <div className="container py-3">
@@ -258,6 +290,7 @@ const guardarNuevo = async () => {
       <h4 className="mb-4 text-center fw-bold text-primary">ASISTENCIA ERS</h4>
 
       <div className="d-flex mb-3">
+      {/* <div className="d-flex mb-3 d-none"></div> */}
         <input type="file" onChange={importarExcel} className="form-control"/>
         <button className="btn btn-warning ms-2" onClick={subirProgramados}>
           <span className="fw-semibold">☁️&nbsp;Subir</span>
@@ -274,9 +307,12 @@ const guardarNuevo = async () => {
       )}
 
       <div className="d-flex gap-2 mb-3">
-        <input
+        <input 
+          type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
           className="form-control"
-          placeholder="Ingrese DNI o CE"
+          placeholder="Ingrese DNI"
           value={dniInput}
           onChange={(e) => setDniInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleManual()}
@@ -294,7 +330,7 @@ const guardarNuevo = async () => {
           </button>
           <button className="btn btn-success p-1"
             onClick={() => {
-              setNuevo({ dni: "", nombre: "", curso: "", empresa: "" }); // limpiar
+              setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" }); // limpiar
               setErrorForm(null); // limpiar error
               setMostrarModal(true);
             }}>
@@ -327,7 +363,7 @@ const guardarNuevo = async () => {
                 value={nuevo.dni}
                 onChange={(e) => setNuevo({ ...nuevo, dni: e.target.value })}
               />
-              <input className="form-control mb-2" placeholder="Nombre"
+              <input className="form-control mb-2" placeholder="Apellidos y Nombres"
                 value={nuevo.nombre}
                 onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
               />
@@ -338,6 +374,10 @@ const guardarNuevo = async () => {
               <input className="form-control mb-2" placeholder="Empresa"
                 value={nuevo.empresa}
                 onChange={(e) => setNuevo({ ...nuevo, empresa: e.target.value })}
+              />
+              <input className="form-control mb-2" placeholder="Aula"
+                value={nuevo.aula}
+                onChange={(e) => setNuevo({ ...nuevo, aula: e.target.value })}
               />
 
               <div className="d-flex gap-2">
@@ -362,11 +402,12 @@ const guardarNuevo = async () => {
       {/* TABLA */}
       <div className="table-responsive">
         <table className="table table-bordered">
-          <thead>
+         <thead>
             <tr>
-              <th>DNI</th>
-              <th>NOMBRE</th>
-              <th>CURSO</th>
+              <th onClick={() => cambiarOrden("dni")} style={{cursor:"pointer"}}>DNI</th>
+              <th onClick={() => cambiarOrden("nombre")} style={{cursor:"pointer"}}>NOMBRE</th>
+              <th onClick={() => cambiarOrden("curso")} style={{cursor:"pointer"}}>CURSO</th>
+              <th onClick={() => cambiarOrden("empresa")} style={{cursor:"pointer"}}>EMPRESA</th>
               <th>ESTADO</th>
             </tr>
           </thead>
@@ -383,6 +424,7 @@ const guardarNuevo = async () => {
                   <td>{p.dni}</td>
                   <td>{p.nombre}</td>
                   <td>{p.curso}</td>
+                   <td>{p.empresa}</td>
                   <td>{asistente ? asistente.asistencia : "Falta"}</td>
                 </tr>
               );
@@ -396,6 +438,7 @@ const guardarNuevo = async () => {
                   <td>{p.dni}</td>
                   <td>{p.nombre}</td>
                   <td>{p.curso}</td>
+                  <td>{p.empresa}</td>
                   <td>Adicional</td>
                 </tr>
               ))}
