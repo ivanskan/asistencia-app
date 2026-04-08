@@ -289,8 +289,8 @@ const cambiarOrden = (campo) => {
       </div>
       <h4 className="mb-4 text-center fw-bold text-primary">ASISTENCIA ERS</h4>
 
-      <div className="d-flex mb-3">
-      {/* <div className="d-flex mb-3 d-none"></div> */}
+      {/* <div className="d-flex mb-3"> */}
+      <div className="d-flex mb-3 d-none">
         <input type="file" onChange={importarExcel} className="form-control"/>
         <button className="btn btn-warning ms-2" onClick={subirProgramados}>
           <span className="fw-semibold">☁️&nbsp;Subir</span>
@@ -313,19 +313,11 @@ const cambiarOrden = (campo) => {
           className="form-control"
           placeholder="Ingrese DNI"
           value={dniInput}
-         onChange={(e) => {
-            let valor = e.target.value.replace(/\D/g, "");
+          onChange={(e) => {
+            let valor = e.target.value.replace(/\D/g, ""); // solo números
 
-            if (valor.length > 12) valor = valor.slice(0, 12);
-
-            if (valor.length >= 8) {
-              valor = valor.slice(0, 8);
-              setDniInput(valor);
-
-              // 🔥 auto registrar
-              marcarAsistencia(valor);
-              setDniInput("");
-              return;
+            if (valor.length > 8) {
+              valor = valor.slice(0, 8); // limitar a 8
             }
 
             setDniInput(valor);
