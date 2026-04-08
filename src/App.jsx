@@ -313,11 +313,21 @@ const cambiarOrden = (campo) => {
           className="form-control"
           placeholder="Ingrese DNI"
           value={dniInput}
-          onChange={(e) => {
-            let valor = e.target.value.replace(/\D/g, ""); // solo números
-            if (valor.length > 8) {
-              valor = valor.slice(0, 8); // limitar a 8
+         onChange={(e) => {
+            let valor = e.target.value.replace(/\D/g, "");
+
+            if (valor.length > 12) valor = valor.slice(0, 12);
+
+            if (valor.length >= 8) {
+              valor = valor.slice(0, 8);
+              setDniInput(valor);
+
+              // 🔥 auto registrar
+              marcarAsistencia(valor);
+              setDniInput("");
+              return;
             }
+
             setDniInput(valor);
           }}
           onKeyDown={(e) => e.key === "Enter" && handleManual()}
