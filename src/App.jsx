@@ -307,14 +307,19 @@ const cambiarOrden = (campo) => {
       )}
 
       <div className="d-flex gap-2 mb-3">
-        <input 
-          type="tel"
+       <input
+          type="text"
           inputMode="numeric"
-          pattern="[0-9]*"
           className="form-control"
           placeholder="Ingrese DNI"
           value={dniInput}
-          onChange={(e) => setDniInput(e.target.value)}
+          onChange={(e) => {
+            let valor = e.target.value.replace(/\D/g, ""); // solo números
+            if (valor.length > 8) {
+              valor = valor.slice(0, 8); // limitar a 8
+            }
+            setDniInput(valor);
+          }}
           onKeyDown={(e) => e.key === "Enter" && handleManual()}
         />
         <button className="btn btn-primary" onClick={handleManual}>
