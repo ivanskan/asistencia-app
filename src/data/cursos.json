@@ -1,0 +1,23 @@
+[
+  { "id": 1, "nombre": "AISLAMIENTO DE ENERGIA" },
+  { "id": 2, "nombre": "BARRICADAS" },
+  { "id": 3, "nombre": "FRM OPERATIVOS" },
+  { "id": 4, "nombre": "FRM SUPERVISORES" },
+  { "id": 5, "nombre": "FUNDAMENTOS" },
+  { "id": 6, "nombre": "FATIGA OPERATIVOS" },
+  { "id": 7, "nombre": "FATIGA SUPERVISORES" },
+  { "id": 8, "nombre": "GESTION DE RIESGOS" },
+  { "id": 9, "nombre": "INDUCCION GENERAL" },
+  { "id": 10, "nombre": "MATPEL I" },
+  { "id": 11, "nombre": "MATPEL I" },
+  { "id": 12, "nombre": "PPCI" },
+  { "id": 13, "nombre": "PRIMEROS AUXILIOS" },
+  { "id": 14, "nombre": "RESCATE ELECTRICO" },
+  { "id": 15, "nombre": "RESCATE CERCA A FUENTES DE AGUA" },
+  { "id": 16, "nombre": "RESPUESTA A EMERGENCIAS CON CIANURO" },
+  { "id": 17, "nombre": "SUPERVISOR DE IZAJE" },
+  { "id": 18, "nombre": "TRABAJOS CON GRUAS E IZAJE" },
+  { "id": 19, "nombre": "TRABAJOS EN ALTURA" },
+  { "id": 20, "nombre": "TRABAJOS EN ESPACIOS CONFINADOS" },
+  { "id": 21, "nombre": "TRABAJOS EN EXCAVACIONES Y ZANJAS" }
+]

@@ -4,6 +4,8 @@ import Scanner from "./components/Scanner";
 import { db } from "./firebase";
 import logo from "/src/assets/ERS-logo.png";
 import logoMin from "/src/assets/ERS-logo-min.png";
+import cursos from "/src/data/cursos.json";
+import empresas from "/src/data/empresas.json";
 import {
   collection,
   addDoc,
@@ -365,27 +367,45 @@ const cambiarOrden = (campo) => {
                   {errorForm}
                 </div>
               )}
-
-              <input className="form-control mb-2" placeholder="DNI"
+              <input
+                className="form-control mb-2"
+                placeholder="DNI"
+                inputMode="numeric"
                 value={nuevo.dni}
-                onChange={(e) => setNuevo({ ...nuevo, dni: e.target.value })}
+                onChange={(e) => {
+                  const valor = e.target.value.replace(/\D/g, "").slice(0, 8);
+                  setNuevo({ ...nuevo, dni: valor });
+                }}
               />
               <input className="form-control mb-2" placeholder="Apellidos y Nombres"
                 value={nuevo.nombre}
-                onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
+                onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value.toLocaleUpperCase() })}
               />
               <input className="form-control mb-2" placeholder="Curso"
+                list="cursos"
                 value={nuevo.curso}
-                onChange={(e) => setNuevo({ ...nuevo, curso: e.target.value })}
-              />
+                onChange={(e) => setNuevo({ ...nuevo, curso: e.target.value.toLocaleUpperCase() })}
+                 />
+              <datalist id="cursos">
+                {cursos.map((curso) => (
+                  <option key={curso.id} value={curso.nombre} />
+                ))}
+              </datalist>
               <input className="form-control mb-2" placeholder="Empresa"
+                list="empresas"
                 value={nuevo.empresa}
-                onChange={(e) => setNuevo({ ...nuevo, empresa: e.target.value })}
+                onChange={(e) => setNuevo({ ...nuevo, empresa: e.target.value.toLocaleUpperCase() })}
               />
+              <datalist id="empresas">
+                {empresas.map((empresa) => (
+                  <option key={empresa.id} value={empresa.nombre} />
+                ))}
+              </datalist>
               <input className="form-control mb-2" placeholder="Aula"
                 value={nuevo.aula}
-                onChange={(e) => setNuevo({ ...nuevo, aula: e.target.value })}
+                onChange={(e) => setNuevo({ ...nuevo, aula: e.target.value.toLocaleUpperCase() })}
               />
+             
 
               <div className="d-flex gap-2">
                 <button className="btn btn-success w-100" onClick={guardarNuevo}>
