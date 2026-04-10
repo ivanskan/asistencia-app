@@ -8,7 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'PK CORP',
+        name: 'Asistencia ERS',
         short_name: 'Asistencia',
         description: 'Control de asistencia con QR',
         theme_color: '#0d6efd',
