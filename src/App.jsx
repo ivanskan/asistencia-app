@@ -27,6 +27,12 @@ function App() {
   const [errorForm, setErrorForm] = useState(null);
   const [ordenCampo, setOrdenCampo] = useState("nombre");
   const [ordenDireccion, setOrdenDireccion] = useState("asc");
+  const [mostrarFiltro, setMostrarFiltro] = useState(false);
+  const [filtro, setFiltro] = useState({
+    curso: "",
+    empresa: "",
+    aula: ""
+  });
   const [nuevo, setNuevo] = useState({
     dni: "",
     nombre: "",
@@ -149,11 +155,9 @@ const subirProgramados = async () => {
 
         setMensaje({
           tipo: "warning",
-          texto: `📚 ${docData.curso} - AULA ${docData.aula} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
+          texto: `📚 ${docData.aula == "SULLANA"?"SULLANA":persona.aula} - ${docData.curso} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
         });
-
         vibrar("warning");
-        // setTimeout(() => setMensaje(null), 2000);
         return;
       }
 
@@ -179,14 +183,14 @@ const subirProgramados = async () => {
 
       setMensaje({
         tipo: "ok",
-        texto: `📚 ${persona.curso} - AULA ${persona.aula} \n😎 ${persona.nombre}\n🆔 ${dni}`
+        texto: `📚 ${persona.aula == "SULLANA"?"SULLANA":persona.aula} - ${persona.curso} \n😎 ${persona.nombre}\n🆔 ${dni}`
       });
 
       vibrar("ok");
 
     } catch (error) {
       console.error(error);
-      setMensaje({ tipo: "error", texto: "❌ Error BD" });
+      setMensaje({ tipo: "error", texto: "❌ Error DB" });
       setTimeout(() => setMensaje(null), 2000);
     }
   };
@@ -252,14 +256,6 @@ const guardarNuevo = async () => {
   const presentes = lista.filter(p => p.asistencia === "Presente").length;
   const adicionales = lista.filter(p => p.asistencia === "Adicional").length;
 
-//   const programadosOrdenados = useMemo(() => {
-//   return [...programados].sort((a, b) => {
-//     const nombreA = (a?.nombre || "").toString();
-//     const nombreB = (b?.nombre || "").toString();
-//     return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
-//   });
-// }, [programados]);
-
 const programadosOrdenados = useMemo(() => {
   return [...programados].sort((a, b) => {
     const valorA = (a?.[ordenCampo] || "").toString().toLowerCase();
@@ -281,6 +277,61 @@ const cambiarOrden = (campo) => {
     setOrdenDireccion("asc");
   }
 };
+
+const listaUnificada = useMemo(() => {
+  const base = programados.map(p => {
+    const asistente = lista.find(a => a.dni === p.dni);
+
+    return {
+      ...p,
+      estado: asistente ? asistente.asistencia : "Falta"
+    };
+  });
+  
+  const adicionalesSolo = lista
+    .filter(
+      a =>
+        a.asistencia === "Adicional" &&
+        !programados.some(p => p.dni === a.dni)
+    )
+    .map(a => ({
+      ...a,
+      estado: "Adicional"
+    }));
+
+  let combinado = [...base, ...adicionalesSolo];
+
+  // 🔎 FILTRO (AQUÍ 👇)
+  combinado = combinado.filter(p => {
+    return (
+      (!filtro.curso || p.curso === filtro.curso) &&
+      (!filtro.empresa || p.empresa === filtro.empresa) &&
+      (!filtro.aula || p.aula === filtro.aula)
+    );
+  });
+
+  // 🔥 ORDENAMIENTO (DESPUÉS DEL FILTRO)
+  combinado.sort((a, b) => {
+    const valorA = (a?.[ordenCampo] || "").toString().toLowerCase();
+    const valorB = (b?.[ordenCampo] || "").toString().toLowerCase();
+
+    return ordenDireccion === "asc"
+      ? valorA.localeCompare(valorB, "es", { sensitivity: "base" })
+      : valorB.localeCompare(valorA, "es", { sensitivity: "base" });
+  });
+
+  return combinado;
+
+}, [programados, lista, filtro, ordenCampo, ordenDireccion]);
+
+const totalFiltrado = listaUnificada.filter(p => p.estado !== "Adicional").length;
+
+const presentesFiltrado = listaUnificada.filter(
+  p => p.estado === "Presente"
+).length;
+
+const hayFiltro = filtro.curso || filtro.empresa || filtro.aula;
+
 
   return (
     <div className="container py-3">
@@ -346,6 +397,12 @@ const cambiarOrden = (campo) => {
             <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>
             <span className="fw-semibold ps-1">Agregar</span>
           </button>
+          <button
+  className="btn btn-danger p-1 fw-bold text-white"
+  onClick={() => setMostrarFiltro(true)}
+>
+  🔍 Filtro
+</button>
         </div>
 
         <button className="btn btn-dark p-1" onClick={exportar}>
@@ -420,11 +477,86 @@ const cambiarOrden = (campo) => {
         </div>
       )}
 
-      <div className="alert alert-info">
-        <b>Total:</b> {total} |
-        <b> Presentes:</b> {presentes} |
-        <b> Adicionales:</b> {adicionales}
+      {mostrarFiltro && (
+  <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
+    <div className="modal-dialog">
+      <div className="modal-content p-3">
+        <h5>Filtrar</h5>
+
+        <select
+          className="form-control mb-2"
+          value={filtro.curso}
+          onChange={e =>
+            setFiltro({ ...filtro, curso: e.target.value })
+          }
+        >
+          <option value="">Todos los cursos</option>
+          {[...new Set(listaUnificada.map(p => p.curso))].map((c, i) => (
+            <option key={i} value={c}>{c}</option>
+          ))}
+        </select>
+
+        <select
+          className="form-control mb-2"
+          value={filtro.empresa}
+          onChange={e =>
+            setFiltro({ ...filtro, empresa: e.target.value })
+          }
+        >
+          <option value="">Todas las empresas</option>
+          {[...new Set(listaUnificada.map(p => p.empresa))].map((e, i) => (
+            <option key={i} value={e}>{e}</option>
+          ))}
+        </select>
+
+        <select
+          className="form-control mb-2"
+          value={filtro.aula}
+          onChange={e =>
+            setFiltro({ ...filtro, aula: e.target.value })
+          }
+        >
+          <option value="">Todas las aulas</option>
+          {[...new Set(listaUnificada.map(p => p.aula))].map((a, i) => (
+            <option key={i} value={a}>{a}</option>
+          ))}
+        </select>
+
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-secondary w-100"
+            onClick={() =>
+              setFiltro({ curso: "", empresa: "", aula: "" })
+            }
+          >
+            Limpiar
+          </button>
+
+          <button
+            className="btn btn-primary w-100"
+            onClick={() => setMostrarFiltro(false)}
+          >
+            Aplicar
+          </button>
+        </div>
       </div>
+    </div>
+  </div>
+)}
+
+    <div className="alert alert-info">
+  {hayFiltro ? (
+    <>
+      <b>Filtrado:</b> {presentesFiltrado} / {totalFiltrado}
+    </>
+  ) : (
+    <>
+      <b>Total:</b> {total} |
+      <b> Presentes:</b> {presentes} |
+      <b> Adicionales:</b> {adicionales}
+    </>
+  )}
+</div>
 
       {/* TABLA */}
       <div className="table-responsive">
@@ -435,42 +567,31 @@ const cambiarOrden = (campo) => {
               <th onClick={() => cambiarOrden("nombre")} style={{cursor:"pointer"}}>NOMBRE</th>
               <th onClick={() => cambiarOrden("curso")} style={{cursor:"pointer"}}>CURSO</th>
               <th onClick={() => cambiarOrden("empresa")} style={{cursor:"pointer"}}>EMPRESA</th>
+              <th onClick={() => cambiarOrden("aula")} style={{cursor:"pointer"}}>AULA</th>
               <th>ESTADO</th>
             </tr>
           </thead>
-          <tbody>
-
-            {/* PROGRAMADOS */}
-            
-            {programadosOrdenados.map((p, i) => {
-              const asistente = lista.find(a => a.dni === p.dni);
-
-              return (
-                <tr key={i}
-                  className={asistente?.asistencia === "Presente" ? "table-success" : ""}>
-                  <td>{p.dni}</td>
-                  <td>{p.nombre}</td>
-                  <td>{p.curso}</td>
-                   <td>{p.empresa}</td>
-                  <td>{asistente ? asistente.asistencia : "Falta"}</td>
-                </tr>
-              );
-            })}
-
-            {/* ADICIONALES */}
-            {lista
-              .filter(p => p.asistencia === "Adicional")
-              .map((p, i) => (
-                <tr key={"ad-" + i} className="table-warning">
-                  <td>{p.dni}</td>
-                  <td>{p.nombre}</td>
-                  <td>{p.curso}</td>
-                  <td>{p.empresa}</td>
-                  <td>Adicional</td>
-                </tr>
-              ))}
-
-          </tbody>
+        <tbody>
+  {listaUnificada.map((p, i) => (
+    <tr
+      key={i}
+      className={
+        p.estado === "Presente"
+          ? "table-success"
+          : p.estado === "Adicional"
+          ? "table-warning"
+          : ""
+      }
+    >
+      <td>{p.dni}</td>
+      <td>{p.nombre}</td>
+      <td>{p.curso}</td>
+      <td>{p.empresa}</td>
+      <td>{p.aula}</td>
+      <td>{p.estado}</td>
+    </tr>
+  ))}
+</tbody>
         </table>
       </div>
 
