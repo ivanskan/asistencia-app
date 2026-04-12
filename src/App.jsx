@@ -31,7 +31,8 @@ function App() {
   const [filtro, setFiltro] = useState({
     curso: "",
     empresa: "",
-    aula: ""
+    aula: "",
+    estado: ""
   });
   const [nuevo, setNuevo] = useState({
     dni: "",
@@ -98,40 +99,40 @@ function App() {
     reader.readAsBinaryString(file);
   };
 
-  // ☁️ SUBIR EXCEL A FIREBASE
+  // SUBIR EXCEL A FIREBASE
 
-const subirProgramados = async () => {
-  if (baseExcel.length === 0) {
-    setMensaje({ tipo: "error", texto: "❌ No hay datos cargados" });
-    return;
-  }
+  const subirProgramados = async () => {
+    if (baseExcel.length === 0) {
+      setMensaje({ tipo: "error", texto: "❌ No hay datos cargados" });
+      return;
+    }
 
-  try {
-    // eliminar anteriores
-    const snapshot = await getDocs(collection(db, "programados"));
-    await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
+    try {
+      // eliminar anteriores
+      const snapshot = await getDocs(collection(db, "programados"));
+      await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
 
-    // subir TODOS en paralelo (CLAVE)
-    await Promise.all(
-      baseExcel.map(p =>
-        addDoc(collection(db, "programados"), p)
-      )
-    );
+      // subir TODOS en paralelo (CLAVE)
+      await Promise.all(
+        baseExcel.map(p =>
+          addDoc(collection(db, "programados"), p)
+        )
+      );
 
-    setMensaje({
-      tipo: "ok",
-      texto: `☁️ ${baseExcel.length} programados subidos`
-    });
+      setMensaje({
+        tipo: "ok",
+        texto: `☁️ ${baseExcel.length} programados subidos`
+      });
 
-    setBaseExcel([]);
+      setBaseExcel([]);
 
-  } catch (err) {
-    console.error("🔥 ERROR SUBIDA:", err);
-    setMensaje({ tipo: "error", texto: "❌ Error subiendo datos" });
-  }
+    } catch (err) {
+      console.error("🔥 ERROR SUBIDA:", err);
+      setMensaje({ tipo: "error", texto: "❌ Error subiendo datos" });
+    }
 
-  setTimeout(() => setMensaje(null), 2000);
-};
+    setTimeout(() => setMensaje(null), 2000);
+  };
 
   // REGISTRAR
   const marcarAsistencia = async (dniRaw) => {
@@ -155,7 +156,7 @@ const subirProgramados = async () => {
 
         setMensaje({
           tipo: "warning",
-          texto: `📚 ${docData.aula == "SULLANA"?"SULLANA":persona.aula} - ${docData.curso} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
+          texto: `📚 ${docData.aula == "SULLANA"?"SULLANA":docData.aula} - ${docData.curso} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
         });
         vibrar("warning");
         return;
@@ -202,38 +203,38 @@ const subirProgramados = async () => {
   };
 
   // AGREGAR
-const guardarNuevo = async () => {
- if (!nuevo.dni || !nuevo.nombre || !nuevo.curso || !nuevo.empresa || !nuevo.aula) {
-  setErrorForm("❌ Todos los campos son obligatorios");
+  const guardarNuevo = async () => {
+  if (!nuevo.dni || !nuevo.nombre || !nuevo.curso || !nuevo.empresa || !nuevo.aula) {
+    setErrorForm("❌ Todos los campos son obligatorios");
 
-  setTimeout(() => setErrorForm(null), 2000); // 👈 auto desaparece
-  return;
-}
-  setErrorForm(null);
+    setTimeout(() => setErrorForm(null), 2000); // 👈 auto desaparece
+    return;
+  }
+    setErrorForm(null);
 
-  await addDoc(collection(db, "asistencia"), {
-    dni: nuevo.dni.toUpperCase(),
-    nombre: nuevo.nombre,
-    curso: nuevo.curso,
-    empresa: nuevo.empresa,
-    aula: nuevo.aula,
-    asistencia: "Adicional",
-    hora: new Date().toLocaleTimeString(),
-    fecha: new Date().toISOString()
-  });
+    await addDoc(collection(db, "asistencia"), {
+      dni: nuevo.dni.toUpperCase(),
+      nombre: nuevo.nombre,
+      curso: nuevo.curso,
+      empresa: nuevo.empresa,
+      aula: nuevo.aula,
+      asistencia: "Adicional",
+      hora: new Date().toLocaleTimeString(),
+      fecha: new Date().toISOString()
+    });
 
-  setMensaje({
-    tipo: "ok",
-    texto: `✅ Agregado: ${nuevo.nombre}`
-  });
+    setMensaje({
+      tipo: "ok",
+      texto: `✅ Agregado: ${nuevo.nombre}`
+    });
 
-  setTimeout(() => setMensaje(null), 2000);
+    setTimeout(() => setMensaje(null), 2000);
 
-  setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" });
-  setMostrarModal(false);
-};
+    setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" });
+    setMostrarModal(false);
+  };
 
-  // ⬇ EXPORTAR
+  // EXPORTAR
   const exportar = () => {
     const data = lista.map((p) => ({
       DNI: p.dni,
@@ -256,81 +257,85 @@ const guardarNuevo = async () => {
   const presentes = lista.filter(p => p.asistencia === "Presente").length;
   const adicionales = lista.filter(p => p.asistencia === "Adicional").length;
 
-const programadosOrdenados = useMemo(() => {
-  return [...programados].sort((a, b) => {
-    const valorA = (a?.[ordenCampo] || "").toString().toLowerCase();
-    const valorB = (b?.[ordenCampo] || "").toString().toLowerCase();
-
-    if (ordenDireccion === "asc") {
-      return valorA.localeCompare(valorB, "es", { sensitivity: "base" });
+  const cambiarOrden = (campo) => {
+    if (ordenCampo === campo) {
+      setOrdenDireccion(ordenDireccion === "asc" ? "desc" : "asc");
     } else {
-      return valorB.localeCompare(valorA, "es", { sensitivity: "base" });
+      setOrdenCampo(campo);
+      setOrdenDireccion("asc");
     }
-  });
-}, [programados, ordenCampo, ordenDireccion]);
+  };
 
-const cambiarOrden = (campo) => {
-  if (ordenCampo === campo) {
-    setOrdenDireccion(ordenDireccion === "asc" ? "desc" : "asc");
-  } else {
-    setOrdenCampo(campo);
-    setOrdenDireccion("asc");
-  }
-};
+  const listaUnificada = useMemo(() => {
+    const base = programados.map(p => {
+      const asistente = lista.find(a => a.dni === p.dni);
 
-const listaUnificada = useMemo(() => {
-  const base = programados.map(p => {
-    const asistente = lista.find(a => a.dni === p.dni);
+      return {
+        ...p,
+        estado: asistente ? asistente.asistencia : "Falta"
+      };
+    });
+    
+    const adicionalesSolo = lista
+      .filter(
+        a =>
+          a.asistencia === "Adicional" &&
+          !programados.some(p => p.dni === a.dni)
+      )
+      .map(a => ({
+        ...a,
+        estado: "Adicional"
+      }));
 
-    return {
-      ...p,
-      estado: asistente ? asistente.asistencia : "Falta"
-    };
-  });
-  
-  const adicionalesSolo = lista
-    .filter(
-      a =>
-        a.asistencia === "Adicional" &&
-        !programados.some(p => p.dni === a.dni)
-    )
-    .map(a => ({
-      ...a,
-      estado: "Adicional"
+    let combinado = [...base, ...adicionalesSolo];
+
+    // FILTRO
+    combinado = combinado.filter(p => {
+      return (
+        (!filtro.curso || p.curso === filtro.curso) &&
+        (!filtro.empresa || p.empresa === filtro.empresa) &&
+        (!filtro.aula || p.aula === filtro.aula) &&
+        (!filtro.estado || p.estado === filtro.estado)
+      );
+    });
+
+    // ORDENAMIENTO (DESPUÉS DEL FILTRO)
+    combinado.sort((a, b) => {
+      const valorA = (a?.[ordenCampo] || "").toString().toLowerCase();
+      const valorB = (b?.[ordenCampo] || "").toString().toLowerCase();
+
+      return ordenDireccion === "asc"
+        ? valorA.localeCompare(valorB, "es", { sensitivity: "base" })
+        : valorB.localeCompare(valorA, "es", { sensitivity: "base" });
+    });
+
+    return combinado;
+
+  }, [programados, lista, filtro, ordenCampo, ordenDireccion]);
+
+  const totalFiltrado = listaUnificada.length;
+  const presentesFiltrado = listaUnificada.filter(p => p.estado === "Presente").length;
+  const adicionalesFiltrado = listaUnificada.filter(  p => p.estado === "Adicional").length;
+
+  const hayFiltro = filtro.curso || filtro.empresa || filtro.aula || filtro.estado;  
+
+  const filtrosActivos = useMemo(() => {
+    const arr = [];
+
+    if (filtro.empresa) arr.push({ key: "empresa", label: "Empresa", valor: filtro.empresa, color: "primary" });
+    if (filtro.curso) arr.push({ key: "curso", label: "Curso", valor: filtro.curso, color: "success" });
+    if (filtro.aula) arr.push({ key: "aula", label: "Aula", valor: filtro.aula, color: "warning" });
+    if (filtro.estado) arr.push({ key: "estado", label: "Estado", valor: filtro.estado, color: "dark" });
+
+    return arr;
+  }, [filtro]);
+
+  const quitarFiltro = (campo) => {
+    setFiltro(prev => ({
+      ...prev,
+      [campo]: ""
     }));
-
-  let combinado = [...base, ...adicionalesSolo];
-
-  // 🔎 FILTRO (AQUÍ 👇)
-  combinado = combinado.filter(p => {
-    return (
-      (!filtro.curso || p.curso === filtro.curso) &&
-      (!filtro.empresa || p.empresa === filtro.empresa) &&
-      (!filtro.aula || p.aula === filtro.aula)
-    );
-  });
-
-  // 🔥 ORDENAMIENTO (DESPUÉS DEL FILTRO)
-  combinado.sort((a, b) => {
-    const valorA = (a?.[ordenCampo] || "").toString().toLowerCase();
-    const valorB = (b?.[ordenCampo] || "").toString().toLowerCase();
-
-    return ordenDireccion === "asc"
-      ? valorA.localeCompare(valorB, "es", { sensitivity: "base" })
-      : valorB.localeCompare(valorA, "es", { sensitivity: "base" });
-  });
-
-  return combinado;
-
-}, [programados, lista, filtro, ordenCampo, ordenDireccion]);
-
-const totalFiltrado = listaUnificada.filter(p => p.estado !== "Adicional").length;
-
-const presentesFiltrado = listaUnificada.filter(
-  p => p.estado === "Presente"
-).length;
-
-const hayFiltro = filtro.curso || filtro.empresa || filtro.aula;
+  };
 
 
   return (
@@ -398,11 +403,11 @@ const hayFiltro = filtro.curso || filtro.empresa || filtro.aula;
             <span className="fw-semibold ps-1">Agregar</span>
           </button>
           <button
-  className="btn btn-danger p-1 fw-bold text-white"
-  onClick={() => setMostrarFiltro(true)}
->
-  🔍 Filtro
-</button>
+            className="btn btn-danger p-1 fw-bold text-white"
+            onClick={() => setMostrarFiltro(true)}
+          >
+            🔍 Filtro
+          </button>
         </div>
 
         <button className="btn btn-dark p-1" onClick={exportar}>
@@ -478,85 +483,124 @@ const hayFiltro = filtro.curso || filtro.empresa || filtro.aula;
       )}
 
       {mostrarFiltro && (
-  <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
-    <div className="modal-dialog">
-      <div className="modal-content p-3">
-        <h5>Filtrar</h5>
+        <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog">
+            <div className="modal-content p-3">
+              <h5>Filtrar</h5>
 
-        <select
-          className="form-control mb-2"
-          value={filtro.curso}
-          onChange={e =>
-            setFiltro({ ...filtro, curso: e.target.value })
-          }
-        >
-          <option value="">Todos los cursos</option>
-          {[...new Set(listaUnificada.map(p => p.curso))].map((c, i) => (
-            <option key={i} value={c}>{c}</option>
-          ))}
-        </select>
+              <select
+                className="form-control mb-2"
+                value={filtro.curso}
+                onChange={e =>
+                  setFiltro({ ...filtro, curso: e.target.value })
+                }
+              >
+                <option value="">Todos los cursos</option>
+                {[...new Set(listaUnificada.map(p => p.curso))].map((c, i) => (
+                  <option key={i} value={c}>{c}</option>
+                ))}
+              </select>
 
-        <select
-          className="form-control mb-2"
-          value={filtro.empresa}
-          onChange={e =>
-            setFiltro({ ...filtro, empresa: e.target.value })
-          }
-        >
-          <option value="">Todas las empresas</option>
-          {[...new Set(listaUnificada.map(p => p.empresa))].map((e, i) => (
-            <option key={i} value={e}>{e}</option>
-          ))}
-        </select>
+              <select
+                className="form-control mb-2"
+                value={filtro.empresa}
+                onChange={e =>
+                  setFiltro({ ...filtro, empresa: e.target.value })
+                }
+              >
+                <option value="">Todas las empresas</option>
+                {[...new Set(listaUnificada.map(p => p.empresa))].map((e, i) => (
+                  <option key={i} value={e}>{e}</option>
+                ))}
+              </select>
 
-        <select
-          className="form-control mb-2"
-          value={filtro.aula}
-          onChange={e =>
-            setFiltro({ ...filtro, aula: e.target.value })
-          }
-        >
-          <option value="">Todas las aulas</option>
-          {[...new Set(listaUnificada.map(p => p.aula))].map((a, i) => (
-            <option key={i} value={a}>{a}</option>
-          ))}
-        </select>
+              <select
+                className="form-control mb-2"
+                value={filtro.aula}
+                onChange={e =>
+                  setFiltro({ ...filtro, aula: e.target.value })
+                }
+              >
+                <option value="">Todas las aulas</option>
+                {[...new Set(listaUnificada.map(p => p.aula))].map((a, i) => (
+                  <option key={i} value={a}>{a}</option>
+                ))}
+              </select>
 
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-secondary w-100"
-            onClick={() =>
-              setFiltro({ curso: "", empresa: "", aula: "" })
-            }
-          >
-            Limpiar
-          </button>
+              <select
+                className="form-control mb-2"
+                value={filtro.estado}
+                onChange={e =>
+                  setFiltro({ ...filtro, estado: e.target.value })
+                }
+              >
+                <option value="">Todas las estados</option>
+                {[...new Set(listaUnificada.map(p => p.estado))].map((a, i) => (
+                  <option key={i} value={a}>{a}</option>
+                ))}
+              </select>
 
-          <button
-            className="btn btn-primary w-100"
-            onClick={() => setMostrarFiltro(false)}
-          >
-            Aplicar
-          </button>
+              <div className="d-flex gap-2">
+                <button
+                  className="btn btn-secondary w-100"
+                  onClick={() =>
+                    setFiltro({ curso: "", empresa: "", aula: "", estado: "" })
+                  }
+                >
+                  Limpiar
+                </button>
+
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={() => setMostrarFiltro(false)}
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
-    <div className="alert alert-info">
-  {hayFiltro ? (
-    <>
-      <b>Filtrado:</b> {presentesFiltrado} / {totalFiltrado}
-    </>
-  ) : (
-    <>
-      <b>Total:</b> {total} |
-      <b> Presentes:</b> {presentes} |
-      <b> Adicionales:</b> {adicionales}
-    </>
-  )}
-</div>
+      {/* INFO FILTROS*/}
+      <div className="alert alert-info">
+        {hayFiltro ? (
+          <>
+            {filtro.estado === "Adicional" ? (
+              <>
+                <b>Adicionales:</b> {adicionalesFiltrado}
+              </>
+              ) : (
+              <>
+                <b>Total:</b> {presentesFiltrado} / {totalFiltrado}
+              </>
+            )}
+            <br />
+            <small className="text fs-6">
+              {filtrosActivos.map((f, i) => (
+                <span
+                  key={i}
+                  className={`badge bg-${f.color} me-1 d-inline-flex align-items-center`}
+                >
+                  {f.label}: {f.valor}
+                  <span className="fw-bold ps-1" 
+                    style={{ cursor: "pointer" }}
+                    onClick={() => quitarFiltro(f.label.toLowerCase())}
+                  >
+                    ✕
+                  </span>
+                </span>
+              ))}
+            </small>
+          </>
+        ) : (
+          <>
+            <b>Total:</b> {total} |
+            <b> Presentes:</b> {presentes} |
+            <b> Adicionales:</b> {adicionales}
+          </>
+        )}
+      </div>
 
       {/* TABLA */}
       <div className="table-responsive">
@@ -568,30 +612,30 @@ const hayFiltro = filtro.curso || filtro.empresa || filtro.aula;
               <th onClick={() => cambiarOrden("curso")} style={{cursor:"pointer"}}>CURSO</th>
               <th onClick={() => cambiarOrden("empresa")} style={{cursor:"pointer"}}>EMPRESA</th>
               <th onClick={() => cambiarOrden("aula")} style={{cursor:"pointer"}}>AULA</th>
-              <th>ESTADO</th>
+              <th onClick={() => cambiarOrden("estado")} style={{cursor:"pointer"}}>ESTADO</th>
             </tr>
           </thead>
         <tbody>
-  {listaUnificada.map((p, i) => (
-    <tr
-      key={i}
-      className={
-        p.estado === "Presente"
-          ? "table-success"
-          : p.estado === "Adicional"
-          ? "table-warning"
-          : ""
-      }
-    >
-      <td>{p.dni}</td>
-      <td>{p.nombre}</td>
-      <td>{p.curso}</td>
-      <td>{p.empresa}</td>
-      <td>{p.aula}</td>
-      <td>{p.estado}</td>
-    </tr>
-  ))}
-</tbody>
+          {listaUnificada.map((p, i) => (
+            <tr
+              key={i}
+              className={
+                p.estado === "Presente"
+                  ? "table-success"
+                  : p.estado === "Adicional"
+                  ? "table-warning"
+                  : ""
+              }
+            >
+              <td>{p.dni}</td>
+              <td>{p.nombre}</td>
+              <td>{p.curso}</td>
+              <td>{p.empresa}</td>
+              <td>{p.aula}</td>
+              <td>{p.estado}</td>
+            </tr>
+          ))}
+        </tbody>
         </table>
       </div>
 
