@@ -159,6 +159,9 @@ function App() {
           texto: `📚 ${docData.aula == "SULLANA"?"SULLANA":docData.aula} - ${docData.curso} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
         });
         vibrar("warning");
+        setTimeout(() => {
+          setDniInput("");
+        }, 300);
         return;
       }
 
@@ -167,6 +170,9 @@ function App() {
       if (!persona) {
         setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
         vibrar("error");
+        setTimeout(() => {
+          setDniInput("");
+        }, 300);
         // setTimeout(() => setMensaje(null), 2000);
         return;
       }
@@ -188,13 +194,15 @@ function App() {
       });
 
       vibrar("ok");
+      setTimeout(() => {
+        setDniInput("");
+      }, 300);
 
     } catch (error) {
       console.error(error);
       setMensaje({ tipo: "error", texto: "❌ Error DB" });
       setTimeout(() => setMensaje(null), 2000);
     }
-    setDniInput("");
   };
 
   const handleManual = () => {
