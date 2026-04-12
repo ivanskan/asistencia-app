@@ -194,6 +194,7 @@ function App() {
       setMensaje({ tipo: "error", texto: "❌ Error DB" });
       setTimeout(() => setMensaje(null), 2000);
     }
+    setDniInput("");
   };
 
   const handleManual = () => {
@@ -382,7 +383,7 @@ function App() {
           }}
           onKeyDown={(e) => e.key === "Enter" && handleManual()}
         />
-        <button className="btn btn-primary" onClick={handleManual}>
+        <button className={`btn ${dniInput.length==8?"btn-primary":"btn-secondary"}`} onClick={handleManual}>
           <span className="fw-semibold"> ✔&nbsp;Registrar</span>
         </button>
       </div>
@@ -391,22 +392,22 @@ function App() {
         <div className="d-flex gap-2">
           <button className="btn btn-primary p-1" onClick={() => setMostrarScanner(!mostrarScanner)}>
             <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M213.1 128.8L202.7 160L128 160C92.7 160 64 188.7 64 224L64 480C64 515.3 92.7 544 128 544L512 544C547.3 544 576 515.3 576 480L576 224C576 188.7 547.3 160 512 160L437.3 160L426.9 128.8C420.4 109.2 402.1 96 381.4 96L258.6 96C237.9 96 219.6 109.2 213.1 128.8zM320 256C373 256 416 299 416 352C416 405 373 448 320 448C267 448 224 405 224 352C224 299 267 256 320 256z"/></svg>
-            <span className="fw-semibold ps-1">Scanner</span>
+            <span className="fw-semibold ps-1">Scan</span>
           </button>
-          <button className="btn btn-success p-1"
+          <button className="btn btn-primary p-1 fw-semibold"
             onClick={() => {
               setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" }); // limpiar
               setErrorForm(null); // limpiar error
               setMostrarModal(true);
             }}>
             <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>
-            <span className="fw-semibold ps-1">Agregar</span>
+            <span className="fw-semibold ps-1">Nuevo</span>
           </button>
-          <button
-            className="btn btn-danger p-1 fw-bold text-white"
+          <button className="btn btn-primary p-1"
             onClick={() => setMostrarFiltro(true)}
           >
-            🔍 Filtro
+            <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M96 128C83.1 128 71.4 135.8 66.4 147.8C61.4 159.8 64.2 173.5 73.4 182.6L256 365.3L256 480C256 488.5 259.4 496.6 265.4 502.6L329.4 566.6C338.6 575.8 352.3 578.5 364.3 573.5C376.3 568.5 384 556.9 384 544L384 365.3L566.6 182.7C575.8 173.5 578.5 159.8 573.5 147.8C568.5 135.8 556.9 128 544 128L96 128z"/></svg>
+            <span className="fw-semibold ps-1">Filtros</span>
           </button>
         </div>
 
@@ -486,7 +487,7 @@ function App() {
         <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog">
             <div className="modal-content p-3">
-              <h5>Filtrar</h5>
+              <h5>Filtros</h5>
 
               <select
                 className="form-control mb-2"
