@@ -303,7 +303,7 @@ function App() {
       return (
         (!filtro.curso || p.curso === filtro.curso) &&
         (!filtro.empresa || p.empresa === filtro.empresa) &&
-        (!filtro.aula || p.aula === filtro.aula) &&
+        (!filtro.aula || p.aula == filtro.aula) &&
         (!filtro.estado || p.estado === filtro.estado)
       );
     });
@@ -331,10 +331,10 @@ function App() {
   const filtrosActivos = useMemo(() => {
     const arr = [];
 
-    if (filtro.empresa) arr.push({ key: "empresa", label: "Empresa", valor: filtro.empresa, color: "primary" });
-    if (filtro.curso) arr.push({ key: "curso", label: "Curso", valor: filtro.curso, color: "success" });
+    if (filtro.curso) arr.push({ key: "curso", label: "Curso", valor: filtro.curso, color: "primary" });
+    if (filtro.empresa) arr.push({ key: "empresa", label: "Empresa", valor: filtro.empresa, color: "success" });
     if (filtro.aula) arr.push({ key: "aula", label: "Aula", valor: filtro.aula, color: "warning" });
-    if (filtro.estado) arr.push({ key: "estado", label: "Estado", valor: filtro.estado, color: "dark" });
+    if (filtro.estado) arr.push({ key: "estado", label: "Estado", valor: filtro.estado, color: "danger" });
 
     return arr;
   }, [filtro]);
@@ -346,6 +346,24 @@ function App() {
     }));
   };
 
+const formatoNombre = (texto) => {
+  if (!texto) return "";
+
+  texto = String(texto); // 👈 convierte TODO a string
+
+  const minusculas = ["de", "la", "los", "las", "y", "del", "en"];
+
+  return texto
+    .toLowerCase()
+    .split(" ")
+    .map((palabra, i) => {
+      if (i !== 0 && minusculas.includes(palabra)) {
+        return palabra;
+      }
+      return palabra.charAt(0).toUpperCase() + palabra.slice(1);
+    })
+    .join(" ");
+};
 
   return (
     <div className="container py-3">
@@ -476,10 +494,8 @@ function App() {
                 value={nuevo.aula}
                 onChange={(e) => setNuevo({ ...nuevo, aula: e.target.value.toLocaleUpperCase() })}
               />
-             
-
               <div className="d-flex gap-2">
-                <button className="btn btn-success w-100" onClick={guardarNuevo}>
+                <button className="btn btn-primary w-100" onClick={guardarNuevo}>
                   Guardar
                 </button>
                 <button className="btn btn-secondary w-100" onClick={() => setMostrarModal(false)}>
@@ -551,19 +567,18 @@ function App() {
 
               <div className="d-flex gap-2">
                 <button
-                  className="btn btn-secondary w-100"
-                  onClick={() =>
-                    setFiltro({ curso: "", empresa: "", aula: "", estado: "" })
-                  }
-                >
-                  Limpiar
-                </button>
-
-                <button
                   className="btn btn-primary w-100"
                   onClick={() => setMostrarFiltro(false)}
                 >
                   Aplicar
+                </button>
+                <button
+                  className="btn btn-danger w-100"
+                  onClick={() =>
+                    setFiltro({ curso: "", empresa: "", aula: "", estado: "" })
+                  }
+                >
+                  Quitar filtros
                 </button>
               </div>
             </div>
@@ -585,22 +600,24 @@ function App() {
               </>
             )}
             <br />
-            <small className="text fs-6">
-              {filtrosActivos.map((f, i) => (
+          <small className="text fs-6">
+            <span className="fw-semibold me-1">Filtros: </span> 
+            {filtrosActivos.map((f, i) => (
+              <span
+                key={i}
+                className={`badge bg-${f.color} me-1`}
+              >
+                {formatoNombre(f.label)}: {formatoNombre(f.valor)}
                 <span
-                  key={i}
-                  className={`badge bg-${f.color} me-1 d-inline-flex align-items-center`}
+                  className="fw-bold ps-1"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => quitarFiltro(f.label.toLowerCase())}
                 >
-                  {f.label}: {f.valor}
-                  <span className="fw-bold ps-1" 
-                    style={{ cursor: "pointer" }}
-                    onClick={() => quitarFiltro(f.label.toLowerCase())}
-                  >
-                    ✕
-                  </span>
+                  ✕
                 </span>
-              ))}
-            </small>
+              </span>
+            ))}
+          </small>
           </>
         ) : (
           <>
@@ -624,7 +641,7 @@ function App() {
               <th onClick={() => cambiarOrden("estado")} style={{cursor:"pointer"}}>ESTADO</th>
             </tr>
           </thead>
-        <tbody>
+        <tbody className="">
           {listaUnificada.map((p, i) => (
             <tr
               key={i}
@@ -636,12 +653,12 @@ function App() {
                   : ""
               }
             >
-              <td>{p.dni}</td>
-              <td>{p.nombre}</td>
-              <td>{p.curso}</td>
-              <td>{p.empresa}</td>
-              <td>{p.aula}</td>
-              <td>{p.estado}</td>
+              <td >{p.dni}</td>
+              <td>{formatoNombre(p.nombre)}</td>
+              <td>{formatoNombre(p.curso)}</td>
+              <td>{formatoNombre(p.empresa)}</td>
+              <td>{formatoNombre(p.aula)}</td>
+              <td>{formatoNombre(p.estado)}</td>
             </tr>
           ))}
         </tbody>
