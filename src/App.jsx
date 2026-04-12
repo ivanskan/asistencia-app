@@ -351,7 +351,7 @@ const formatoNombre = (texto) => {
 
   texto = String(texto); // 👈 convierte TODO a string
 
-  const minusculas = ["de", "la", "los", "las", "y", "del", "en"];
+  const minusculas = ["de", "la", "los", "las", "y", "del", "en", "a"];
 
   return texto
     .toLowerCase()
@@ -409,31 +409,33 @@ const formatoNombre = (texto) => {
           }}
           onKeyDown={(e) => e.key === "Enter" && handleManual()}
         />
-        <button className={`btn ${dniInput.length==8?"btn-primary":"btn-secondary"}`} onClick={handleManual}>
-          <span className="fw-semibold"> ✔&nbsp;Registrar</span>
+        <button className={`btn d-flex align-items-center fw-semibold flex-nowrap  ${dniInput.length==8?"btn-primary":"btn-secondary"}`} 
+        onClick={handleManual}>
+            <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M530.8 134.1C545.1 144.5 548.3 164.5 537.9 178.8L281.9 530.8C276.4 538.4 267.9 543.1 258.5 543.9C249.1 544.7 240 541.2 233.4 534.6L105.4 406.6C92.9 394.1 92.9 373.8 105.4 361.3C117.9 348.8 138.2 348.8 150.7 361.3L252.2 462.8L486.2 141.1C496.6 126.8 516.6 123.6 530.9 134z"/></svg>
+            <span className="fw-semibold ps-1">Registrar</span>
         </button>
       </div>
 
       <div className="d-flex gap-2 mb-3 justify-content-between">
         <div className="d-flex gap-2">
-          <button className="btn btn-primary p-1" onClick={() => setMostrarScanner(!mostrarScanner)}>
+          <button className="btn btn-primary p-1 fw-semibold d-flex align-items-center" onClick={() => setMostrarScanner(!mostrarScanner)}>
             <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M213.1 128.8L202.7 160L128 160C92.7 160 64 188.7 64 224L64 480C64 515.3 92.7 544 128 544L512 544C547.3 544 576 515.3 576 480L576 224C576 188.7 547.3 160 512 160L437.3 160L426.9 128.8C420.4 109.2 402.1 96 381.4 96L258.6 96C237.9 96 219.6 109.2 213.1 128.8zM320 256C373 256 416 299 416 352C416 405 373 448 320 448C267 448 224 405 224 352C224 299 267 256 320 256z"/></svg>
-            <span className="fw-semibold ps-1">Scan</span>
+            <span className="fw-semibold px-1">Scan</span>
           </button>
-          <button className="btn btn-primary p-1 fw-semibold"
+          <button className="btn btn-primary p-1 fw-semibold d-flex align-items-center"
             onClick={() => {
               setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" }); // limpiar
               setErrorForm(null); // limpiar error
               setMostrarModal(true);
             }}>
             <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>
-            <span className="fw-semibold ps-1">Nuevo</span>
+            <span className="fw-semibold px-1">Nuevo</span>
           </button>
-          <button className="btn btn-primary p-1"
+          <button className="btn btn-primary p-1 fw-semibold d-flex align-items-center"
             onClick={() => setMostrarFiltro(true)}
           >
             <svg style={{width:"30px"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="rgb(255, 255, 255)" d="M96 128C83.1 128 71.4 135.8 66.4 147.8C61.4 159.8 64.2 173.5 73.4 182.6L256 365.3L256 480C256 488.5 259.4 496.6 265.4 502.6L329.4 566.6C338.6 575.8 352.3 578.5 364.3 573.5C376.3 568.5 384 556.9 384 544L384 365.3L566.6 182.7C575.8 173.5 578.5 159.8 573.5 147.8C568.5 135.8 556.9 128 544 128L96 128z"/></svg>
-            <span className="fw-semibold ps-1">Filtros</span>
+            <span className="fw-semibold px-1">Filtros</span>
           </button>
         </div>
 
