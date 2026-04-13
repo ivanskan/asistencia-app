@@ -365,6 +365,29 @@ const formatoNombre = (texto) => {
     })
     .join(" ");
 };
+  useEffect(() => {
+  const unlockAudio = () => {
+    try {
+      if ("speechSynthesis" in window) {
+        const dummy = new SpeechSynthesisUtterance(" ");
+        window.speechSynthesis.speak(dummy);
+        window.speechSynthesis.cancel();
+        console.log("🔓 Audio desbloqueado");
+      }
+    } catch (e) {
+      console.log("Error desbloqueando audio", e);
+    }
+  };
+
+  // 👇 IMPORTANTE: en TV el keydown es clave
+  document.addEventListener("keydown", unlockAudio, { once: true });
+  document.addEventListener("click", unlockAudio, { once: true });
+
+  return () => {
+    document.removeEventListener("keydown", unlockAudio);
+    document.removeEventListener("click", unlockAudio);
+  };
+}, []);
 
   return (
     <div className="container py-3">
