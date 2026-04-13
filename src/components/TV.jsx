@@ -193,7 +193,7 @@ export default function TV() {
 
                 return (
                   <tr key={i} className={activo ? "tv-active" : ""}>
-                    <td className="col-curso">{formatoNombre(curso)}</td>
+                    <td className="col-curso">{curso}</td>
                     <td className="col-aula">{formatoNombre(aula)}</td>
                     <td className="col-asist">{presentes}/{lista.length}</td>
                   </tr>
