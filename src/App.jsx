@@ -6,6 +6,7 @@ import logo from "/src/assets/ERS-logo.png";
 import logoMin from "/src/assets/ERS-logo-min.png";
 import cursos from "/src/data/cursos.json";
 import empresas from "/src/data/empresas.json";
+import aulas from "/src/data/aulas.json";
 import {
   collection,
   addDoc,
@@ -493,9 +494,15 @@ const formatoNombre = (texto) => {
                 ))}
               </datalist>
               <input className="form-control mb-2" placeholder="Aula"
+                list="aulas"
                 value={nuevo.aula}
                 onChange={(e) => setNuevo({ ...nuevo, aula: e.target.value.toLocaleUpperCase() })}
               />
+              <datalist id="aulas">
+                {aulas.map((aula) => (
+                  <option key={aula.id} value={aula.nombre} />
+                ))}
+              </datalist>
               <div className="d-flex gap-2">
                 <button className="btn btn-primary w-100" onClick={guardarNuevo}>
                   Guardar
