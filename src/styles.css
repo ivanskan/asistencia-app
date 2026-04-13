@@ -35,12 +35,12 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 40px;
 }
 
 .tv-title {
   color: #facc15;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -49,7 +49,7 @@ body {
 }
 
 .tv-clock-time {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
 }
 
@@ -72,14 +72,13 @@ body {
 }
 
 .tv-left td {
-  padding: 8px 5px;
+  padding: 5px 5px;
   border-bottom: 1px solid #1e293b;
 }
 
 /* COLUMNAS */
 .col-curso {
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 0.8rem;
 }
 
 .col-aula {
@@ -93,7 +92,7 @@ body {
 
 /* ACTIVO */
 .tv-active {
-  background: rgba(250, 204, 21, 0.15);
+  background: #584c1a;
 }
 
 /* 📋 DERECHA */
@@ -105,8 +104,8 @@ body {
 /* TITULO CURSO */
 .tv-curso-title {
   color: #facc15;
-  font-size: 1.6rem;
-  margin-bottom: 10px;
+  font-size: 1.5rem;
+  margin-bottom: 5px;
 }
 
 /* TABLA DERECHA */
@@ -117,24 +116,25 @@ body {
 
 .tv-table th {
   text-align: left;
-  padding: 8px;
+  padding: 5px;
   font-size: 0.85rem;
   border-bottom: 1px solid #334155;
 }
 
 .tv-table td {
-  padding: 8px;
+  padding: 2px;
   border-bottom: 1px solid #1e293b;
 }
 
 /* COLUMNAS DERECHA */
+
 .col-dni {
   width: 90px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .col-nombre {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .col-empresa {
@@ -145,6 +145,7 @@ body {
   width: 40px;
   text-align: center;
   font-size: 1rem;
+
 }
 
 /* ESTADOS */

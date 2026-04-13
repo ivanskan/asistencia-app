@@ -8,6 +8,7 @@ export default function TV() {
   const [indice, setIndice] = useState(0);
   const [ultimoRegistro, setUltimoRegistro] = useState(null);
   const [hora, setHora] = useState(new Date());
+  const [tiempoToast, setTiempoToast] = useState(null);
 
   // ⏰ reloj
   useEffect(() => {
@@ -58,10 +59,8 @@ export default function TV() {
       if (data.length > 0) {
         const ultimo = data[0];
         setUltimoRegistro(ultimo);
-
+        setTiempoToast(Date.now());
         reproducirAudio(ultimo);
-
-        setTimeout(() => setUltimoRegistro(null), 6000);
       }
     });
 
@@ -91,10 +90,42 @@ export default function TV() {
 
     const interval = setInterval(() => {
       setIndice(prev => (prev + 1) % cursosArray.length);
-    }, 7000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, [cursosArray.length]);
+
+  const formatoNombre = (texto) => {
+    if (!texto) return "";
+
+    texto = String(texto);
+    const minusculas = ["de", "la", "los", "las", "y", "del", "en", "a"];
+    return texto
+      .toLowerCase()
+      .split(" ")
+      .map((palabra, i) => {
+        if (i !== 0 && minusculas.includes(palabra)) {
+          return palabra;
+        }
+        return palabra.charAt(0).toUpperCase() + palabra.slice(1);
+      })
+      .join(" ");
+  };
+
+  useEffect(() => {
+  if (!ultimoRegistro || !tiempoToast) return;
+
+  const interval = setInterval(() => {
+    const ahora = Date.now();
+
+    if (ahora - tiempoToast > 6000) {
+      setUltimoRegistro(null);
+      setTiempoToast(null);
+    }
+  }, 500); // revisa cada 0.5s
+
+  return () => clearInterval(interval);
+}, [ultimoRegistro, tiempoToast]);
 
   return (
     <div className="tv-container">
@@ -125,7 +156,7 @@ export default function TV() {
           <table>
             <thead>
               <tr>
-                <th>CURSO</th>
+                <th className="col-curso">CURSO</th>
                 <th>AULA</th>
                 <th>ASIST</th>
               </tr>
@@ -138,8 +169,8 @@ export default function TV() {
 
                 return (
                   <tr key={i} className={activo ? "tv-active" : ""}>
-                    <td className="col-curso">{curso}</td>
-                    <td className="col-aula">{aula}</td>
+                    <td className="col-curso">{formatoNombre(curso)}</td>
+                    <td className="col-aula">{formatoNombre(aula)}</td>
                     <td className="col-asist">{presentes}/{lista.length}</td>
                   </tr>
                 );
@@ -173,10 +204,10 @@ export default function TV() {
                     .map((p, i) => (
                       <tr key={i}>
                         <td className="col-dni">{p.dni}</td>
-                        <td className="col-nombre">{p.nombre}</td>
-                        <td className="col-empresa">{p.empresa}</td>
-                        <td className={`col-check ${p.estado === "Presente" ? "ok" : "bad"}`}>
-                          {p.estado === "Presente" ? "✔" : "✖"}
+                        <td className="col-nombre">{formatoNombre(p.nombre)}</td>
+                        <td className="col-empresa">{formatoNombre(p.empresa)}</td>
+                        <td className={`col-check ${formatoNombre(p.estado) == "Presente" ? "ok" : "bad"}`}>
+                          {p.estado === "Presente" ? "Presente" : "Falta"}
                         </td>
                       </tr>
                     ))}
@@ -191,10 +222,10 @@ export default function TV() {
       {/* TOAST */}
       {ultimoRegistro && (
         <div className="tv-welcome">
-          <div>👋 Bienvenido</div>
-          <div>{ultimoRegistro.nombre}</div>
-          <div>{ultimoRegistro.curso}</div>
-          <div>Aula: {ultimoRegistro.aula}</div>
+          <div>👋 BIENVENIDO</div>
+          <div>{formatoNombre(ultimoRegistro.nombre)}</div>
+          <div>{formatoNombre(ultimoRegistro.curso)}</div>
+          <div>Aula: {formatoNombre(ultimoRegistro.aula)}</div>
         </div>
       )}
     </div>
