@@ -143,9 +143,9 @@ export default function TVMIN() {
              {ultimoRegistro && (
             <div className="tv-min-welcome">
               <p className="tv-min-card-title">AULA {ultimoRegistro.aula}</p>
-              <p className="tv-min-card-text">{ultimoRegistro.nombre}</p>
-              <p className="tv-min-card-text"> CURSO: {ultimoRegistro.curso}</p>
-              <p className="tv-min-card-text"> EMPRESA: {ultimoRegistro.empresa}</p>
+              <p className="tv-min-card-text">{ultimoRegistro.nombre.toUpperCase()}</p>
+              <p className="tv-min-card-text">CURSO: {ultimoRegistro.curso}</p>
+              <p className="tv-min-card-text">EMPRESA: {ultimoRegistro.empresa}</p>
             </div>
           )}
         </div>
