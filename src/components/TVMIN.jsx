@@ -35,16 +35,29 @@ export default function TVMIN() {
   }, []);
 
   // 🔊 audio
-  const reproducirAudio = (persona) => {
-    const texto = `Bienvenido ${persona.nombre}, curso ${persona.curso}, aula ${persona.aula}`;
-    const speech = new SpeechSynthesisUtterance(texto);
-    speech.lang = "es-ES";
-    speech.rate = 0.9;
+  const reproducirAudio = async (persona) => {
+    const texto = `${persona.nombre}, curso ${persona.curso}, aula ${persona.aula}`;
 
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(speech);
+    try {
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(texto)}&tl=es&client=tw-ob`;
+
+      const audio = new Audio(url);
+      audio.play().catch(() => {
+        console.log("🔇 fallback a voz nativa");
+
+        // fallback si falla
+        const speech = new SpeechSynthesisUtterance(texto);
+        speech.lang = "es-ES";
+        speech.rate = 1;
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(speech);
+      });
+
+    } catch (e) {
+      console.log("error total audio");
+    }
   };
-
   // último registro
   useEffect(() => {
     const q = query(
