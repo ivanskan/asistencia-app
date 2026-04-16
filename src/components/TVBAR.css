@@ -53,9 +53,13 @@
 
 /* TABLA IZQUIERDA */
 .tv-min-left table {
-  margin-top: 2rem; 
+  margin-top: 1.5rem; 
   width: 100%;
   border-collapse: collapse;
+}
+
+.grafico {
+ margin-top: 1.5rem; 
 }
 
 .tv-min-left thead {
@@ -88,23 +92,6 @@
 
 .col-min-asist {
   font-size: 0.8rem;
-}
-
-.col-min-caption {
-  color: white;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.sumary {
-  color: white;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.table-foot {
-  display: flex;
-  justify-content: space-between;
 }
 
 /* 📋 DERECHA */

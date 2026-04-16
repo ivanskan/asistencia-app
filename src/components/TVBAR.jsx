@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
-import "./TVMIN.css";
+import "./TVBAR.css";
 import logo from "/src/assets/ERS-logo.png";
-import ersito from "/src/assets/ersito.jpeg";
+import GraficoCursosBar from "./GraficoCursosBar";
 
-export default function TVMIN() {
+export default function TVBAR() {
   const [programados, setProgramados] = useState([]);
   const [asistencia, setAsistencia] = useState([]);
   const [ultimoRegistro, setUltimoRegistro] = useState(null);
@@ -112,8 +112,8 @@ export default function TVMIN() {
             <thead>
               <tr>
                 <th className="col-min-curso">CURSO</th>
-                <th className="text-end">AULA</th>
-                <th className="text-end">ASIST</th>
+                <th>AULA</th>
+                <th>ASIST</th>
               </tr>
             </thead>
             <tbody>
@@ -124,22 +124,19 @@ export default function TVMIN() {
                 return (
                   <tr key={i}>  
                     <td className="col-min-curso">{curso}</td>
-                    <td className="col-min-aula text-end">{aula}</td>
-                    <td className="col-min-asist text-end">{presentes}/{lista.length}</td>
+                    <td className="col-min-aula">{aula}</td>
+                    <td className="col-min-asist">{presentes}/{lista.length}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <div className="table-foot">
-            <span className="sumary">TOTAL</span>
-            <span className="col-min-caption">{asistencia.length}/{programados.length}</span>
+          <div className="grafico">
+            <GraficoCursosBar 
+              programados={programados} 
+              asistencia={asistencia} 
+            />
           </div>
-          <div style={{ backgroundColor: "transparent" }}>
-     <img src={ersito}  alt="logo" className="d-sm-block w-50 btn" />
-          </div>
-     
-
         </div>
 
         {/* DERECHA */}
