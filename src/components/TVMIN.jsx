@@ -135,9 +135,7 @@ export default function TVMIN() {
             <span className="sumary">TOTAL</span>
             <span className="col-min-caption">{asistencia.length}/{programados.length}</span>
           </div>
-          <div style={{ backgroundColor: "transparent" }}>
-     <img src={ersito}  alt="logo" className="d-sm-block w-50 btn" />
-          </div>
+        
      
 
         </div>
