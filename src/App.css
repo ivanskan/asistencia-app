@@ -182,3 +182,37 @@
     border-right-color: var(--border);
   }
 }
+
+.tv-msg-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* AULA GRANDE */
+.tv-msg-aula {
+  font-size: 42px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* NOMBRE */
+.tv-msg-nombre {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* CURSO */
+.tv-msg-curso {
+  font-size: 22px;
+  opacity: 0.9;
+}
+
+/* EMPRESA */
+.tv-msg-empresa {
+  font-size: 18px;
+  opacity: 0.8;
+}

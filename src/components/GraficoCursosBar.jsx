@@ -69,8 +69,8 @@ function GraficoCursosBar({ programados, asistencia }) {
     <div style={{ width: "100%", height: 260 }}>
 
       <BarChart
-        width={520}
-        height={260}
+        width={320}
+        height={160}
         data={data}
       >
         <XAxis dataKey="curso" stroke="#fff" />

@@ -125,18 +125,62 @@
 
 
 /* 👋 TOAST BIENVENIDA (más pequeño) */
+/* 👋 TOAST BIENVENIDA (MEJORADO) */
 .tv-min-welcome {
   display: flex;
   justify-content: center;
   flex-direction: column;
-  background: linear-gradient(45deg, rgba(255,0,0,0), rgba(255,0,0,1));
-  color: rgb(255, 255, 255);
   border-radius: 2rem;
   font-weight: 900;
-  padding: 1rem;
-  box-shadow: 0  10px 15px rgba(181, 206, 113, 0.3);
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  min-width: 400px;
 }
 
+/* 🎨 GRADIENTES POR TIPO */
+.tv-ok {
+  background: linear-gradient(45deg, black, green);
+}
+
+.tv-warning {
+  background: linear-gradient(45deg, black, orange);
+}
+
+.tv-error {
+  background: linear-gradient(45deg, black, red);
+}
+
+/* 🏫 AULA (GRANDE Y PROTAGONISTA) */
+.tv-min-aula {
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  white-space: nowrap; /* 👈 evita salto de línea */
+}
+
+/* 👤 NOMBRE */
+.tv-min-nombre {
+  font-size: 1.6rem;
+  text-align: center;
+  margin: 0.2rem 0;
+}
+
+/* 📘 CURSO */
+.tv-min-curso {
+  font-size: 1.3rem;
+  text-align: center;
+  margin: 0.2rem 0;
+  opacity: 0.9;
+}
+
+/* 🏢 EMPRESA */
+.tv-min-empresa {
+  font-size: 1.1rem;
+  text-align: center;
+  margin: 0.2rem 0;
+  opacity: 0.8;
+}
 .tv-min-card-title { 
   font-size: 3rem;
   text-align: center;
@@ -151,3 +195,10 @@
   font-size: 0.85rem;
   padding: .5rem;
 }
+
+.grafico-min {
+ margin-top: 1.5rem; 
+ margin-bottom: 1rem;
+ height: 50%;
+}
+

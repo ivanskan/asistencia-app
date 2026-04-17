@@ -7,6 +7,7 @@ import logoMin from "/src/assets/ERS-logo-min.png";
 import cursos from "/src/data/cursos.json";
 import empresas from "/src/data/empresas.json";
 import aulas from "/src/data/aulas.json";
+import { serverTimestamp } from "firebase/firestore";
 import {
   collection,
   addDoc,
@@ -159,6 +160,12 @@ function App() {
           tipo: "warning",
           texto: `📚 ${docData.aula == "SULLANA"?"SULLANA":docData.aula} - ${docData.curso} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
         });
+        await enviarMensaje("warning", {
+          aula: docData.aula,
+          nombre: docData.nombre,
+          curso: docData.curso,
+          empresa: docData.empresa
+        });
         vibrar("warning");
         setTimeout(() => {
           setDniInput("");
@@ -170,7 +177,13 @@ function App() {
 
       if (!persona) {
         setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
-        vibrar("error");
+      await enviarMensaje("error", {
+        nombre: `DNI: ${dni}`,
+        aula: "",
+        curso: "",
+        empresa: ""
+      });
+       vibrar("error");
         setTimeout(() => {
           setDniInput("");
         }, 300);
@@ -187,6 +200,13 @@ function App() {
         asistencia: "Presente",
         hora: new Date().toLocaleTimeString(),
         fecha: new Date().toISOString()
+      });
+
+      await enviarMensaje("ok", {
+        aula: persona.aula,
+        nombre: persona.nombre,
+        curso: persona.curso,
+        empresa: persona.empresa
       });
 
       setMensaje({
@@ -366,6 +386,17 @@ const formatoNombre = (texto) => {
     .join(" ");
 };
 
+const enviarMensaje = async (tipo, data) => {
+  try {
+    await addDoc(collection(db, "mensajes"), {
+      tipo,
+      data, // 👈 objeto estructurado
+      fecha: serverTimestamp()
+    });
+  } catch (e) {
+    console.error("Error enviando mensaje:", e);
+  }
+};
   return (
     <div className="container py-3">
 
