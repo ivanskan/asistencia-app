@@ -201,12 +201,12 @@ const totalPresentes = asistencia.filter(
              {totalPresentes}/{totalGeneral}
             </span>
           </div>
-          {/* <div className="grafico-min">
+          <div className="grafico-min">
             <GraficoCursosBar 
               programados={programados} 
               asistencia={asistencia} 
             />
-          </div> */}
+          </div>
         </div>
           
         {/* DERECHA */}
