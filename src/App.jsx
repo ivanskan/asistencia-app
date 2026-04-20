@@ -407,7 +407,7 @@ const enviarMensaje = async (tipo, data) => {
       <h4 className="mb-4 text-center fw-bold text-primary">ASISTENCIA ERS</h4>
 
       {/* <div className="d-flex mb-3"> */}
-      <div className="d-flex mb-3 d-noa">
+      <div className="d-flex mb-3 d-none">
         <input type="file" onChange={importarExcel} className="form-control"/>
         <button className="btn btn-warning ms-2" onClick={subirProgramados}>
           <span className="fw-semibold">☁️&nbsp;Subir</span>
