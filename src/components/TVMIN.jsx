@@ -193,9 +193,8 @@ const totalPresentes = asistencia.filter(
              {totalPresentes}/{totalGeneral}
             </span>
           </div>       
-          </div>
-          
         </div>
+          
         {/* DERECHA */}
         <div>
 
