@@ -9,8 +9,7 @@ import {
 } from "firebase/firestore";
 import "./TVMIN.css";
 import logo from "/src/assets/ERS-logo.png";
-import ersito from "/src/assets/ersito.jpeg";
-import GraficoCursosBar from "./GraficoCursosBar";
+import eresito from "/src/assets/ersito.webp";
 
 export default function TVMIN() {
   const [programados, setProgramados] = useState([]);
@@ -46,27 +45,18 @@ export default function TVMIN() {
   }, []);
 
   // 🔊 audio
-  const reproducirAudio = async (persona) => {
-    if (!persona) return;
+const audios = {
+  ok: new Audio("/audio/bienvenido.mp3"),
+  warning: new Audio("/audio/registrado.mp3"),
+  error: new Audio("/audio/error.mp3")
+};
 
-    const texto = `${persona.nombre || ""}, curso ${persona.curso || ""}, aula ${persona.aula || ""}`;
+const reproducirAudio = (tipo) => {
+  const audio = audios[tipo] || audios.ok;
 
-    try {
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(texto)}&tl=es&client=tw-ob`;
-
-      const audio = new Audio(url);
-      audio.play().catch(() => {
-        const speech = new SpeechSynthesisUtterance(texto);
-        speech.lang = "es-ES";
-        speech.rate = 1;
-
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(speech);
-      });
-    } catch (e) {
-      console.log("error audio");
-    }
-  };
+  audio.currentTime = 0; // reinicia
+  audio.play().catch(() => {});
+};
 
   // 🔔 MENSAJES
 useEffect(() => {
@@ -89,7 +79,9 @@ useEffect(() => {
       // 🧠 SOPORTA OBJETO Y STRING
       if (typeof ultimo.data === "object") {
         setUltimoRegistro(ultimo.data);
-        reproducirAudio(ultimo.data);
+        setTimeout(() => {
+          reproducirAudio(tipo);
+        }, 150);
       } else {
         const texto = ultimo.data || "";
 
@@ -195,18 +187,12 @@ const totalPresentes = asistencia.filter(
             </tbody>
           </table>
 
-          <div className="table-foot">
+          <div className="table-foot mt-2">
             <span className="sumary">TOTAL</span>
             <span className="col-min-caption">
              {totalPresentes}/{totalGeneral}
             </span>
-          </div>
-          {/* <div className="grafico-min">
-            <GraficoCursosBar 
-              programados={programados} 
-              asistencia={asistencia} 
-            />
-          </div> */}
+          </div>       
         </div>
           
         {/* DERECHA */}

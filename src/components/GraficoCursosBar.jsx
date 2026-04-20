@@ -39,7 +39,7 @@ function GraficoCursosBar({ programados, asistencia }) {
         const porcentaje = total > 0 ? (presentes / total) * 100 : 0;
 
         return {
-          curso: curso.length > 12 ? curso.slice(0, 12) + "..." : curso,
+          curso: curso,
           asistentes: presentes,
           total: total,
           porcentaje,

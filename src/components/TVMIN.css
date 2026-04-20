@@ -123,9 +123,7 @@
   margin-bottom: 5px;
 }
 
-
-/* 👋 TOAST BIENVENIDA (más pequeño) */
-/* 👋 TOAST BIENVENIDA (MEJORADO) */
+/* 👋 TOAST BIENVENIDA  */
 .tv-min-welcome {
   display: flex;
   justify-content: center;
@@ -195,10 +193,3 @@
   font-size: 0.85rem;
   padding: .5rem;
 }
-
-.grafico-min {
- margin-top: 1.5rem; 
- margin-bottom: 1rem;
- height: 50%;
-}
-

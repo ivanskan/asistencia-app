@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import AppRouter from "./AppRouter";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./styles.css";
 
 import { registerSW } from 'virtual:pwa-register';
 
