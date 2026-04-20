@@ -92,11 +92,9 @@ useEffect(() => {
           empresa: ""
         });
 
-        reproducirAudio({
-          nombre: texto,
-          curso: "",
-          aula: ""
-        });
+        setTimeout(() => {
+          reproducirAudio(tipo);
+        }, 150);
       }
     }
   });
@@ -156,8 +154,10 @@ const totalPresentes = asistencia.filter(
 
         {/* IZQUIERDA */}
         <div className="tv-min-left">
-
-          <img src={logo} alt="logo" className="d-sm-block w-50 btn" />
+          <div className="d-flex align-items-center">
+            <img src={logo} alt="logo" className="d-sm-block w-50" />
+            <input type="text" className="input-hide"/>
+          </div>
 
           <table>
             <thead>

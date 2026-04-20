@@ -193,3 +193,11 @@
   font-size: 0.85rem;
   padding: .5rem;
 }
+
+.input-hide {
+  margin-top: 15px;
+  background: #0f172a;
+  height: 20px;
+  width: 20px;
+  border: none;
+}
