@@ -114,6 +114,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  /* position: relative; */
 }
 
 /* TITULO CURSO */
@@ -200,4 +201,73 @@
   height: 20px;
   width: 20px;
   border: none;
+}
+
+@keyframes flash {
+  0% { box-shadow: 0 0 0px rgba(255,255,255,0); }
+  50% { box-shadow: 0 0 25px rgba(255,255,255,0.7); }
+  100% { box-shadow: 0 0 0px rgba(255,255,255,0); }
+}
+
+.tv-min-welcome {
+  animation: popIn 0.4s ease, flash 0.6s ease;
+}
+
+.sparkle-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle {
+  position: absolute;
+  top: -10px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: white;
+  opacity: 0;
+  animation: sparkleFall 1.2s ease forwards;
+}
+
+/* variación de tamaños */
+.sparkle:nth-child(3n) {
+  width: 3px;
+  height: 3px;
+}
+.sparkle:nth-child(3n+1) {
+  width: 5px;
+  height: 5px;
+}
+
+/* posiciones distribuidas */
+.sparkle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.sparkle:nth-child(2) { left: 20%; animation-delay: 0.1s; }
+.sparkle:nth-child(3) { left: 30%; animation-delay: 0.2s; }
+.sparkle:nth-child(4) { left: 40%; animation-delay: 0.05s; }
+.sparkle:nth-child(5) { left: 50%; animation-delay: 0.15s; }
+.sparkle:nth-child(6) { left: 60%; animation-delay: 0.08s; }
+.sparkle:nth-child(7) { left: 70%; animation-delay: 0.12s; }
+.sparkle:nth-child(8) { left: 80%; animation-delay: 0.18s; }
+.sparkle:nth-child(9) { left: 90%; animation-delay: 0.07s; }
+.sparkle:nth-child(10) { left: 15%; animation-delay: 0.11s; }
+
+/* animación elegante */
+@keyframes sparkleFall {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  60% {
+    transform: translateY(120px) scale(1);
+  }
+  100% {
+    transform: translateY(220px) scale(0.6);
+    opacity: 0;
+  }
 }

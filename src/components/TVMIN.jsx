@@ -17,6 +17,8 @@ export default function TVMIN() {
   const [ultimoRegistro, setUltimoRegistro] = useState(null);
   const [tipoMensaje, setTipoMensaje] = useState("ok");
   const [hora, setHora] = useState(new Date());
+  const [animKey, setAnimKey] = useState(0);
+  const [showSparkle, setShowSparkle] = useState(false);
 
   const ultimoId = useRef(null); // 👈 evita repetir audio
 
@@ -69,16 +71,26 @@ useEffect(() => {
   const unsub = onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map(doc => doc.data());
 
+    
     if (data.length > 0) {
       const ultimo = data[0];
 
       // ✅ AQUÍ sí existe "ultimo"
       const tipo = (ultimo.tipo || "ok").trim().toLowerCase();
       setTipoMensaje(tipo);
+      
+  if (tipo === "ok") {
+  setShowSparkle(true);
+
+  setTimeout(() => {
+    setShowSparkle(false);
+  }, 1200);
+}
 
       // 🧠 SOPORTA OBJETO Y STRING
       if (typeof ultimo.data === "object") {
         setUltimoRegistro(ultimo.data);
+        setAnimKey(prev => prev + 1);
         setTimeout(() => {
           reproducirAudio(tipo);
         }, 150);
@@ -91,6 +103,7 @@ useEffect(() => {
           curso: "",
           empresa: ""
         });
+        setAnimKey(prev => prev + 1);
 
         setTimeout(() => {
           reproducirAudio(tipo);
@@ -98,6 +111,7 @@ useEffect(() => {
       }
     }
   });
+  
 
   return () => unsub();
 }, []);
@@ -218,9 +232,26 @@ const totalPresentes = asistencia.filter(
           </div>
 
           <div className="tv-min-right">
+            {showSparkle && (
+  <div className="sparkle-container">
+    {Array.from({ length: 15 }).map((_, i) => (
+      <span key={i} className="sparkle"></span>
+    ))}
+  </div>
+)}
 
             {ultimoRegistro && (
+            // <div
+            //   className={`tv-min-welcome ${
+            //     tipoMensaje === "ok"
+            //       ? "tv-ok"
+            //       : tipoMensaje === "warning"
+            //       ? "tv-warning"
+            //       : "tv-error"
+            //   }`}
+            // >  
             <div
+              key={animKey}
               className={`tv-min-welcome ${
                 tipoMensaje === "ok"
                   ? "tv-ok"
@@ -228,7 +259,7 @@ const totalPresentes = asistencia.filter(
                   ? "tv-warning"
                   : "tv-error"
               }`}
-            >  
+            >
 
               <p className="tv-min-aula">
               {tipoMensaje === "error"
