@@ -233,37 +233,44 @@ function App() {
   };
 
   // AGREGAR
-  const guardarNuevo = async () => {
+ // AGREGAR
+ const guardarNuevo = async () => {
   if (!nuevo.dni || !nuevo.nombre || !nuevo.curso || !nuevo.empresa || !nuevo.aula) {
     setErrorForm("❌ Todos los campos son obligatorios");
-
-    setTimeout(() => setErrorForm(null), 2000); // 👈 auto desaparece
+    setTimeout(() => setErrorForm(null), 2000);
     return;
   }
-    setErrorForm(null);
 
-    await addDoc(collection(db, "asistencia"), {
-      dni: nuevo.dni.toUpperCase(),
-      nombre: nuevo.nombre,
-      curso: nuevo.curso,
-      empresa: nuevo.empresa,
-      aula: nuevo.aula,
-      asistencia: "Adicional",
-      hora: new Date().toLocaleTimeString(),
-      fecha: new Date().toISOString()
-    });
+  setErrorForm(null);
 
-    setMensaje({
-      tipo: "ok",
-      texto: `✅ Agregado: ${nuevo.nombre}`
-    });
+  await addDoc(collection(db, "asistencia"), {
+    dni: nuevo.dni.toUpperCase(),
+    nombre: nuevo.nombre,
+    curso: nuevo.curso,
+    empresa: nuevo.empresa,
+    aula: nuevo.aula,
+    asistencia: "Adicional",
+    hora: new Date().toLocaleTimeString(),
+    fecha: new Date().toISOString()
+  });
 
-    setTimeout(() => setMensaje(null), 2000);
+  await enviarMensaje("additional", {
+    aula: nuevo.aula,
+    nombre: nuevo.nombre,
+    curso: nuevo.curso,
+    empresa: nuevo.empresa
+  });
 
-    setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" });
-    setMostrarModal(false);
-  };
+  setMensaje({
+    tipo: "ok",
+    texto: `✅ Agregado: ${nuevo.nombre}`
+  });
 
+  setTimeout(() => setMensaje(null), 2000);
+
+  setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" });
+  setMostrarModal(false);
+};
   // EXPORTAR
   const exportar = () => {
     const data = lista.map((p) => ({

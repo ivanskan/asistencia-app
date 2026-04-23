@@ -19,6 +19,11 @@ export default function TVMIN() {
   const [hora, setHora] = useState(new Date());
   const [animKey, setAnimKey] = useState(0);
   const [showSparkle, setShowSparkle] = useState(false);
+  const [colaMensajes, setColaMensajes] = useState([]);
+const [mensajeActivo, setMensajeActivo] = useState(null);
+const procesando = useRef(false);
+const [modoIdle, setModoIdle] = useState(true);
+const idleTimer = useRef(null);
 
   const ultimoId = useRef(null); // 👈 evita repetir audio
 
@@ -50,7 +55,8 @@ export default function TVMIN() {
 const audios = {
   ok: new Audio("/audio/bienvenido.mp3"),
   warning: new Audio("/audio/registrado.mp3"),
-  error: new Audio("/audio/error.mp3")
+  error: new Audio("/audio/error.mp3"),
+  additional: new Audio("/audio/bienvenido.mp3"),
 };
 
 const reproducirAudio = (tipo) => {
@@ -71,50 +77,63 @@ useEffect(() => {
   const unsub = onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map(doc => doc.data());
 
-    
     if (data.length > 0) {
       const ultimo = data[0];
 
-      // ✅ AQUÍ sí existe "ultimo"
       const tipo = (ultimo.tipo || "ok").trim().toLowerCase();
-      setTipoMensaje(tipo);
-      
-  if (tipo === "ok") {
-  setShowSparkle(true);
 
-  setTimeout(() => {
-    setShowSparkle(false);
-  }, 1200);
-}
+      let payload;
 
-      // 🧠 SOPORTA OBJETO Y STRING
       if (typeof ultimo.data === "object") {
-        setUltimoRegistro(ultimo.data);
-        setAnimKey(prev => prev + 1);
-        setTimeout(() => {
-          reproducirAudio(tipo);
-        }, 150);
+        payload = {
+          tipo,
+          ...ultimo.data
+        };
       } else {
-        const texto = ultimo.data || "";
-
-        setUltimoRegistro({
+        payload = {
+          tipo,
+          nombre: ultimo.data || "",
           aula: "",
-          nombre: texto,
           curso: "",
           empresa: ""
-        });
-        setAnimKey(prev => prev + 1);
-
-        setTimeout(() => {
-          reproducirAudio(tipo);
-        }, 150);
+        };
       }
+
+      // 👉 AGREGA A LA COLA (NO REEMPLAZA)
+      setColaMensajes(prev => [...prev, payload]);
     }
   });
-  
 
   return () => unsub();
 }, []);
+
+useEffect(() => {
+  if (procesando.current) return;
+  if (colaMensajes.length === 0) return;
+
+  procesando.current = true;
+
+  const mensaje = colaMensajes[0];
+
+  setMensajeActivo(mensaje);
+  setTipoMensaje(mensaje.tipo);
+  setAnimKey(prev => prev + 1);
+
+  // ✨ sparkle solo en OK
+  if (mensaje.tipo === "ok" || mensaje.tipo === "additional") {
+    setShowSparkle(true);
+    setTimeout(() => setShowSparkle(false), 1200);
+  }
+
+  reproducirAudio(mensaje.tipo);
+
+  // ⏳ duración en pantalla
+  setTimeout(() => {
+    setColaMensajes(prev => prev.slice(1)); // quita el primero
+    procesando.current = false;
+  }, 3500);
+
+}, [colaMensajes]);
 
   // agrupar cursos
   const cursos = {};
@@ -161,6 +180,26 @@ const totalGeneral = programados.length + adicionalesUnicos.length;
 const totalPresentes = asistencia.filter(
   a => a.asistencia === "Presente" || a.asistencia === "Adicional"
 ).length;
+
+useEffect(() => {
+  if (colaMensajes.length === 0) return;
+
+  // 👇 hubo actividad → salir de idle
+  setModoIdle(false);
+
+  // limpiar timer anterior
+  if (idleTimer.current) clearTimeout(idleTimer.current);
+
+  // 👇 iniciar conteo de 2 minutos
+  idleTimer.current = setTimeout(() => {
+    setModoIdle(true);
+  }, 1 * 60 * 1000);
+
+}, [colaMensajes]);
+
+useEffect(() => {
+  setModoIdle(true);
+}, []);
 
   return (
     <div className="tv-min-container">
@@ -231,58 +270,66 @@ const totalPresentes = asistencia.filter(
             </div>
           </div>
 
-          <div className="tv-min-right">
-            {showSparkle && (
-  <div className="sparkle-container">
-    {Array.from({ length: 15 }).map((_, i) => (
-      <span key={i} className="sparkle"></span>
-    ))}
-  </div>
-)}
+        <div className="tv-min-right">
 
-            {ultimoRegistro && (
-            // <div
-            //   className={`tv-min-welcome ${
-            //     tipoMensaje === "ok"
-            //       ? "tv-ok"
-            //       : tipoMensaje === "warning"
-            //       ? "tv-warning"
-            //       : "tv-error"
-            //   }`}
-            // >  
-            <div
-              key={animKey}
-              className={`tv-min-welcome ${
-                tipoMensaje === "ok"
-                  ? "tv-ok"
-                  : tipoMensaje === "warning"
-                  ? "tv-warning"
-                  : "tv-error"
-              }`}
-            >
+  {modoIdle ? (
+    <div className="tv-idle">
+      <img src={eresito} alt="idle" className="idle-img" />
+    </div>
+  ) : (
+    <>
+      {showSparkle && (
+        <div className="sparkle-container">
+          {Array.from({ length: 15 }).map((_, i) => (
+            <span key={i} className="sparkle"></span>
+          ))}
+        </div>
+      )}
 
-              <p className="tv-min-aula">
-              {tipoMensaje === "error"
-                ? "❌ No encontrado!"
-                : (ultimoRegistro.aula || "")}
-              </p>
+      {mensajeActivo && (
+        <div
+          key={animKey}
+          className={`tv-min-welcome ${
+            mensajeActivo.tipo === "additional"
+              ? "tv-adicional"
+              : mensajeActivo.tipo === "ok"
+              ? "tv-ok"
+              : mensajeActivo.tipo === "warning"
+              ? "tv-warning"
+              : "tv-error"
+          }`}
+        >
+          <p className="tv-min-aula">
+            {mensajeActivo.tipo === "error"
+              ? "❌ No encontrado!"
+              : mensajeActivo.aula || ""}
+          </p>
 
-                <p className="tv-min-nombre">
-                  {(ultimoRegistro?.nombre || "").toUpperCase()}
-                </p>
+          <p className="tv-min-nombre">
+            {(mensajeActivo.nombre || "").toUpperCase()}
+          </p>
 
-                <p className="tv-min-curso">
-                  {ultimoRegistro.curso || ""}
-                </p>
+          <p className="tv-min-curso">
+            {mensajeActivo.curso || ""}
+          </p>
 
-                <p className="tv-min-empresa">
-                  {ultimoRegistro.empresa || ""}
-                </p>
+          <p className="tv-min-empresa">
+            {mensajeActivo.empresa || ""}
+          </p>
+        </div>
+      )}
+    </>
+  )}
 
-              </div>
-            )}
-
-          </div>
+</div>
+          <div className="tv-min-queue">
+  {colaMensajes.slice(1, 4).map((m, i) => (
+    <div key={i} 
+   className={`queue-item queue-${m.tipo}`}>
+      {(m.nombre || "").toUpperCase()}
+    </div>
+  ))}
+</div>
         </div>
       </div>
     </div>
