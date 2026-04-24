@@ -110,6 +110,7 @@
 /* 📋 DERECHA */
 .tv-min-right {
   width: 100%;
+  min-width: 450px;
   padding: 25px;
   display: flex;
   justify-content: center;
@@ -127,7 +128,7 @@
 /* 👋 TOAST BIENVENIDA  */
 .tv-min-welcome {
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
   flex-direction: column;
   border-radius: 2rem;
   font-weight: 900;
@@ -151,7 +152,7 @@
 
 /* 🏫 AULA (GRANDE Y PROTAGONISTA) */
 .tv-min-aula {
-  font-size: 3.5rem;
+  font-size: 3rem;
   font-weight: 900;
   text-align: center;
   margin-bottom: 0.5rem;
@@ -161,14 +162,14 @@
 /* 👤 NOMBRE */
 .tv-min-nombre {
   font-size: 1.6rem;
-  text-align: center;
+  /* text-align: center; */
   margin: 0.2rem 0;
 }
 
 /* 📘 CURSO */
 .tv-min-curso {
   font-size: 1.3rem;
-  text-align: center;
+  /* text-align: center; */
   margin: 0.2rem 0;
   opacity: 0.9;
 }
@@ -176,7 +177,7 @@
 /* 🏢 EMPRESA */
 .tv-min-empresa {
   font-size: 1.1rem;
-  text-align: center;
+  /* text-align: center; */
   margin: 0.2rem 0;
   opacity: 0.8;
 }
@@ -333,11 +334,37 @@
 
 .idle-img {
   opacity: 0.7;
-  max-width: 250px;
+  max-width: 200px;
   animation: fadeIn 0.8s ease;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 0.2; transform: scale(1); }
+}
+
+
+.tv-min-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr; /* etiqueta fija + valor flexible */
+  row-gap: 6px;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.tv-min-grid .label {
+  font-weight: 600;
+  text-align: right;
+  opacity: 0.8;
+    font-size: 1.2rem;
+}
+
+.tv-min-grid .value {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.tv-min-grid .label::after {
+  content: ":";
+  margin-left: 4px;
 }

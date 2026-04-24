@@ -7,12 +7,14 @@ import logoMin from "/src/assets/ERS-logo-min.png";
 import cursos from "/src/data/cursos.json";
 import empresas from "/src/data/empresas.json";
 import aulas from "/src/data/aulas.json";
-import { serverTimestamp } from "firebase/firestore";
 import {
   collection,
   addDoc,
+  serverTimestamp,
   onSnapshot,
   query,
+  orderBy,
+  limit,
   where,
   getDocs, 
   deleteDoc 
@@ -393,17 +395,49 @@ const formatoNombre = (texto) => {
     .join(" ");
 };
 
+// const enviarMensaje = async (tipo, data) => {
+//   try {
+//     await addDoc(collection(db, "mensajes"), {
+//       tipo,
+//       data, // 👈 objeto estructurado
+//       fecha: serverTimestamp()
+//     });
+//   } catch (e) {
+//     console.error("Error enviando mensaje:", e);
+//   }
+// };
+
 const enviarMensaje = async (tipo, data) => {
   try {
+    // 1. guardar mensaje nuevo
     await addDoc(collection(db, "mensajes"), {
       tipo,
-      data, // 👈 objeto estructurado
+      data,
       fecha: serverTimestamp()
     });
+
+    // 2. obtener TODOS ordenados (más nuevos primero)
+    const q = query(
+      collection(db, "mensajes"),
+      orderBy("fecha", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+
+    // 3. si hay más de 5 → borrar los extras
+    if (snapshot.docs.length > 5) {
+      const excedentes = snapshot.docs.slice(5); // desde el 6to
+
+      await Promise.all(
+        excedentes.map(doc => deleteDoc(doc.ref))
+      );
+    }
+
   } catch (e) {
     console.error("Error enviando mensaje:", e);
   }
 };
+
   return (
     <div className="container py-3">
 

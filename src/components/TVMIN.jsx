@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import "./TVMIN.css";
 import logo from "/src/assets/ERS-logo.png";
-import eresito from "/src/assets/ersito.webp";
+import eresito from "/src/assets/ersito.png";
 
 export default function TVMIN() {
   const [programados, setProgramados] = useState([]);
@@ -287,37 +287,42 @@ useEffect(() => {
       )}
 
       {mensajeActivo && (
-        <div
-          key={animKey}
-          className={`tv-min-welcome ${
-            mensajeActivo.tipo === "additional"
-              ? "tv-adicional"
-              : mensajeActivo.tipo === "ok"
-              ? "tv-ok"
-              : mensajeActivo.tipo === "warning"
-              ? "tv-warning"
-              : "tv-error"
-          }`}
-        >
-          <p className="tv-min-aula">
-            {mensajeActivo.tipo === "error"
-              ? "❌ No encontrado!"
-              : mensajeActivo.aula || ""}
-          </p>
+  <div
+    key={animKey}
+    className={`tv-min-welcome ${
+      mensajeActivo.tipo === "additional"
+        ? "tv-adicional"
+        : mensajeActivo.tipo === "ok"
+        ? "tv-ok"
+        : mensajeActivo.tipo === "warning"
+        ? "tv-warning"
+        : "tv-error"
+    }`}
+  >
+    <p className="tv-min-aula">
+      {mensajeActivo.tipo === "error"
+        ? "❌ No encontrado!"
+        : `AULA ${mensajeActivo.aula || ""}`}
+    </p>
 
-          <p className="tv-min-nombre">
-            {(mensajeActivo.nombre || "").toUpperCase()}
-          </p>
+    <div className="tv-min-grid">
+      <span className="label">NOMBRE</span>
+      <span className="value">
+        {(mensajeActivo.nombre || "").toUpperCase()}
+      </span>
 
-          <p className="tv-min-curso">
-            {mensajeActivo.curso || ""}
-          </p>
+      <span className="label">CURSO</span>
+      <span className="value">
+        {mensajeActivo.curso || ""}
+      </span>
 
-          <p className="tv-min-empresa">
-            {mensajeActivo.empresa || ""}
-          </p>
-        </div>
-      )}
+      <span className="label">EMPRESA</span>
+      <span className="value">
+        {mensajeActivo.empresa || ""}
+      </span>
+    </div>
+  </div>
+)}
     </>
   )}
 
