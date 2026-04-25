@@ -419,17 +419,18 @@ const enviarMensaje = async (tipo, data) => {
       fecha: serverTimestamp()
     });
 
-    // 2. obtener TODOS ordenados (más nuevos primero)
+    // 2. traer solo los más recientes (no todos)
     const q = query(
       collection(db, "mensajes"),
-      orderBy("fecha", "desc")
+      orderBy("fecha", "desc"),
+      limit(10) // margen de seguridad
     );
 
     const snapshot = await getDocs(q);
 
-    // 3. si hay más de 5 → borrar los extras
+    // 3. borrar los que exceden 5
     if (snapshot.docs.length > 5) {
-      const excedentes = snapshot.docs.slice(5); // desde el 6to
+      const excedentes = snapshot.docs.slice(5);
 
       await Promise.all(
         excedentes.map(doc => deleteDoc(doc.ref))
