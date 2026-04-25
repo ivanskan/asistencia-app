@@ -110,7 +110,7 @@
 /* 📋 DERECHA */
 .tv-min-right {
   width: 100%;
-  min-width: 450px;
+  min-width: 500px;
   padding: 25px;
   display: flex;
   justify-content: center;
