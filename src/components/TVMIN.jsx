@@ -286,7 +286,7 @@ useEffect(() => {
         </div>
       )}
 
-      {mensajeActivo && (
+{mensajeActivo && (
   <div
     key={animKey}
     className={`tv-min-welcome ${
@@ -305,22 +305,33 @@ useEffect(() => {
         : `AULA ${mensajeActivo.aula || ""}`}
     </p>
 
-    <div className="tv-min-grid">
-      <span className="label">NOMBRE</span>
-      <span className="value">
-        {(mensajeActivo.nombre || "").toUpperCase()}
-      </span>
+    {/* 🔴 ERROR → SOLO DNI */}
+    {mensajeActivo.tipo === "error" ? (
+      <div className="tv-min-grid">
+        <span className="label">DNI</span>
+        <span className="value">
+          {(mensajeActivo.nombre || "").replace("DNI:", "").trim()}
+        </span>
+      </div>
+    ) : (
+      /* 🟢 NORMAL */
+      <div className="tv-min-grid">
+        <span className="label">NOMBRE</span>
+        <span className="value">
+          {(mensajeActivo.nombre || "").toUpperCase()}
+        </span>
 
-      <span className="label">CURSO</span>
-      <span className="value">
-        {mensajeActivo.curso || ""}
-      </span>
+        <span className="label">CURSO</span>
+        <span className="value">
+          {mensajeActivo.curso || ""}
+        </span>
 
-      <span className="label">EMPRESA</span>
-      <span className="value">
-        {mensajeActivo.empresa || ""}
-      </span>
-    </div>
+        <span className="label">EMPRESA</span>
+        <span className="value">
+          {mensajeActivo.empresa || ""}
+        </span>
+      </div>
+    )}
   </div>
 )}
     </>
