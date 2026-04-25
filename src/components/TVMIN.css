@@ -8,21 +8,21 @@
   overflow: hidden;
 }
 
-/* 📦 BODY */
+/* BODY */
 .tv-min-body {
   display: flex;
   justify-content: center;
   height: 100vh;
 }
 
-/* 📊 DERECHA */
+/* DERECHA */
 .tv-min-left {
   padding: 20px 25px;
   display: flex;
   flex-direction: column;
 }
 
-/* 🔝 HEADER DERECHA */
+/* HEADER DERECHA */
 .tv-min-left-header {
   display: flex;
   justify-content: space-between;
@@ -107,7 +107,7 @@
   justify-content: space-between;
 }
 
-/* 📋 DERECHA */
+/* DERECHA */
 .tv-min-right {
   width: 100%;
   min-width: 500px;
@@ -115,7 +115,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  /* position: relative; */
+  position: relative;
 }
 
 /* TITULO CURSO */
@@ -125,10 +125,9 @@
   margin-bottom: 5px;
 }
 
-/* 👋 TOAST BIENVENIDA  */
+/* TOAST BIENVENIDA  */
 .tv-min-welcome {
   display: flex;
-  /* justify-content: center; */
   flex-direction: column;
   border-radius: 2rem;
   font-weight: 900;
@@ -137,7 +136,7 @@
   min-width: 400px;
 }
 
-/* 🎨 GRADIENTES POR TIPO */
+/* GRADIENTES POR TIPO */
 .tv-ok {
   background: linear-gradient(45deg, black, green);
 }
@@ -150,7 +149,7 @@
   background: linear-gradient(45deg, black, red);
 }
 
-/* 🏫 AULA (GRANDE Y PROTAGONISTA) */
+/* AULA (GRANDE Y PROTAGONISTA) */
 .tv-min-aula {
   font-size: 3rem;
   font-weight: 900;
@@ -162,22 +161,19 @@
 /* 👤 NOMBRE */
 .tv-min-nombre {
   font-size: 1.6rem;
-  /* text-align: center; */
   margin: 0.2rem 0;
 }
 
-/* 📘 CURSO */
+/* CURSO */
 .tv-min-curso {
   font-size: 1.3rem;
-  /* text-align: center; */
   margin: 0.2rem 0;
   opacity: 0.9;
 }
 
-/* 🏢 EMPRESA */
+/* EMPRESA */
 .tv-min-empresa {
   font-size: 1.1rem;
-  /* text-align: center; */
   margin: 0.2rem 0;
   opacity: 0.8;
 }
@@ -265,10 +261,10 @@
     transform: scale(1.2);
   }
   60% {
-    transform: translateY(120px) scale(1);
+    transform: translateY(220px) scale(1);
   }
   100% {
-    transform: translateY(220px) scale(0.6);
+    transform: translateY(420px) scale(0.6);
     opacity: 0;
   }
 }
@@ -299,7 +295,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 🔵 ADICIONAL (azul elegante) */
+/* ADICIONAL (azul elegante) */
 .tv-adicional {
   background: linear-gradient(135deg, #00c6ff, #0072ff);
   color: white;
@@ -307,7 +303,7 @@
   box-shadow: 0 0 20px rgba(0, 114, 255, 0.6);
 }
 
-/* ✨ efecto glow */
+/* efecto glow */
 .tv-adicional .tv-min-nombre {
   text-shadow: 0 0 8px rgba(0, 200, 255, 0.8);
 }
@@ -356,12 +352,13 @@
   font-weight: 600;
   text-align: right;
   opacity: 0.8;
-    font-size: 1.2rem;
+  font-size: 1.2rem;
 }
 
 .tv-min-grid .value {
   font-weight: 700;
   font-size: 1.2rem;
+  line-height: 1.5rem;
 }
 
 .tv-min-grid .label::after {

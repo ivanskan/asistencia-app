@@ -179,12 +179,15 @@ function App() {
 
       if (!persona) {
         setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
-      await enviarMensaje("error", {
-        nombre: `DNI: ${dni}`,
-        aula: "",
-        curso: "",
-        empresa: ""
-      });
+        
+        await enviarMensaje("error", {
+          dni: dni,
+          nombre: "",
+          aula: "",
+          curso: "",
+          empresa: ""
+        });
+
        vibrar("error");
         setTimeout(() => {
           setDniInput("");

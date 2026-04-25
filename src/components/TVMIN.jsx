@@ -309,9 +309,7 @@ useEffect(() => {
     {mensajeActivo.tipo === "error" ? (
       <div className="tv-min-grid">
         <span className="label">DNI</span>
-        <span className="value">
-          {(mensajeActivo.nombre || "").replace("DNI:", "").trim()}
-        </span>
+        <span className="value">{mensajeActivo.dni}</span>
       </div>
     ) : (
       /* 🟢 NORMAL */
