@@ -21,7 +21,6 @@ import {
 } from "firebase/firestore";
 
 function App() {
-  const [baseExcel, setBaseExcel] = useState([]); // programados (local)
   const [programados, setProgramados] = useState([]); // firebase
   const [lista, setLista] = useState([]); // asistencia
   const [mostrarScanner, setMostrarScanner] = useState(false);
@@ -46,30 +45,51 @@ function App() {
     aula: ""
   });
 
+  const [filtroGlobal, setFiltroGlobal] = useState({
+  fecha: "",
+  turno: "mañana"
+});
+
   const ultimoScan = useRef("");
 
   // ESCUCHAR PROGRAMADOS
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "programados"), (snapshot) => {
-      const datos = snapshot.docs.map(doc => doc.data());
-      setProgramados(datos);
-    });
+useEffect(() => {
+  if (!filtroGlobal.fecha) return;
 
-    return () => unsub();
-  }, []);
+  const q = query(
+    collection(db, "programados"),
+    where("fecha", "==", filtroGlobal.fecha),
+    where("turno", "==", filtroGlobal.turno)
+  );
+
+  const unsub = onSnapshot(q, (snapshot) => {
+    const datos = snapshot.docs.map(doc => doc.data());
+    setProgramados(datos);
+  });
+
+  return () => unsub();
+}, [filtroGlobal]);
 
   // ESCUCHAR ASISTENCIA
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "asistencia"), (snapshot) => {
-      const datos = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setLista(datos);
-    });
+useEffect(() => {
+  if (!filtroGlobal.fecha) return;
 
-    return () => unsub();
-  }, []);
+  const q = query(
+    collection(db, "asistencia"),
+    where("fecha", "==", filtroGlobal.fecha),
+    where("turno", "==", filtroGlobal.turno)
+  );
+
+  const unsub = onSnapshot(q, (snapshot) => {
+    const datos = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setLista(datos);
+  });
+
+  return () => unsub();
+}, [filtroGlobal]);
 
   // Vibración
   const vibrar = (tipo = "ok") => {
@@ -79,170 +99,120 @@ function App() {
     else navigator.vibrate([50, 50, 50]);
   };
 
-  // IMPORTAR EXCEL (LOCAL)
-  const importarExcel = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (ev) => {
-      const workbook = XLSX.read(ev.target.result, { type: "binary" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const filas = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-
-      const data = filas.map((row) => ({
-        dni: String(row["DNI"] || "").trim().toUpperCase(),
-        nombre: row["NOMBRE"] || "",
-        curso: row["CURSO"] || "",
-        empresa: row["EMPRESA"] || "",
-        aula: row["AULA"] || ""
-      }));
-
-      setBaseExcel(data);
-    };
-
-    reader.readAsBinaryString(file);
-  };
-
-  // SUBIR EXCEL A FIREBASE
-
-  const subirProgramados = async () => {
-    if (baseExcel.length === 0) {
-      setMensaje({ tipo: "error", texto: "❌ No hay datos cargados" });
-      return;
-    }
-
-    try {
-      // eliminar anteriores
-      const snapshot = await getDocs(collection(db, "programados"));
-      await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
-
-      // subir TODOS en paralelo (CLAVE)
-      await Promise.all(
-        baseExcel.map(p =>
-          addDoc(collection(db, "programados"), p)
-        )
-      );
-
-      setMensaje({
-        tipo: "ok",
-        texto: `☁️ ${baseExcel.length} programados subidos`
-      });
-
-      setBaseExcel([]);
-
-    } catch (err) {
-      console.error("🔥 ERROR SUBIDA:", err);
-      setMensaje({ tipo: "error", texto: "❌ Error subiendo datos" });
-    }
-
-    setTimeout(() => setMensaje(null), 2000);
-  };
-
+  
   // REGISTRAR
-  const marcarAsistencia = async (dniRaw) => {
-    const dni = dniRaw.trim().toUpperCase();
-    // solo números y longitud exacta
-    if (!/^\d{8}$/.test(dni)) {
+ const marcarAsistencia = async (dniRaw) => {
+  // 🔴 validar fecha obligatoria
+  if (!filtroGlobal.fecha) {
+    setMensaje({ tipo: "error", texto: "❌ Selecciona fecha" });
+    return;
+  }
+
+  const dni = dniRaw.trim().toUpperCase();
+
+  // 🔴 validar formato DNI
+  if (!/^\d{8}$/.test(dni)) return;
+
+  setDniInput(dni);
+
+  // 🔁 evitar doble scan rápido
+  if (dni === ultimoScan.current) return;
+  ultimoScan.current = dni;
+  setTimeout(() => (ultimoScan.current = ""), 2000);
+
+  try {
+    // ✅ VALIDAR DUPLICADO LOCAL (🔥 reemplaza getDocs)
+    const yaRegistrado = lista.find(a => a.dni === dni);
+
+    if (yaRegistrado) {
+      setMensaje({
+        tipo: "warning",
+        texto: `📚 ${yaRegistrado.aula == "SULLANA" ? "SULLANA" : yaRegistrado.aula} - ${yaRegistrado.curso} \n🤦‍♂️ ${yaRegistrado.nombre}\n🆔 ${yaRegistrado.dni}`
+      });
+
+      await enviarMensaje("warning", {
+        aula: yaRegistrado.aula,
+        nombre: yaRegistrado.nombre,
+        curso: yaRegistrado.curso,
+        empresa: yaRegistrado.empresa
+      });
+
+      vibrar("warning");
+      setTimeout(() => setDniInput(""), 300);
       return;
     }
-    setDniInput(dni);
 
-    if (dni === ultimoScan.current) return;
-    ultimoScan.current = dni;
-    setTimeout(() => (ultimoScan.current = ""), 2500);
+    // 🔍 buscar en programados
+    const persona = programados.find(p => p.dni === dni);
 
-    try {
-      const q = query(collection(db, "asistencia"), where("dni", "==", dni));
-      const querySnapshot = await getDocs(q);
+    if (!persona) {
+      setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
 
-      if (!querySnapshot.empty) {
-        const docData = querySnapshot.docs[0].data();
-
-        setMensaje({
-          tipo: "warning",
-          texto: `📚 ${docData.aula == "SULLANA"?"SULLANA":docData.aula} - ${docData.curso} \n🤦‍♂️ ${docData.nombre}\n🆔 ${docData.dni}`
-        });
-        await enviarMensaje("warning", {
-          aula: docData.aula,
-          nombre: docData.nombre,
-          curso: docData.curso,
-          empresa: docData.empresa
-        });
-        vibrar("warning");
-        setTimeout(() => {
-          setDniInput("");
-        }, 300);
-        return;
-      }
-
-      const persona = programados.find(p => p.dni === dni);
-
-      if (!persona) {
-        setMensaje({ tipo: "error", texto: `❌ DNI ${dni} No encontrado` });
-        
-        await enviarMensaje("error", {
-          dni: dni,
-          nombre: "",
-          aula: "",
-          curso: "",
-          empresa: ""
-        });
-
-       vibrar("error");
-        setTimeout(() => {
-          setDniInput("");
-        }, 300);
-        // setTimeout(() => setMensaje(null), 2000);
-        return;
-      }
-
-      await addDoc(collection(db, "asistencia"), {
+      await enviarMensaje("error", {
         dni,
-        nombre: persona.nombre,
-        curso: persona.curso,
-        empresa: persona.empresa || "",
-        aula: persona.aula || "",
-        asistencia: "Presente",
-        hora: new Date().toLocaleTimeString(),
-        fecha: new Date().toISOString()
+        nombre: "",
+        aula: "",
+        curso: "",
+        empresa: ""
       });
 
-      await enviarMensaje("ok", {
-        aula: persona.aula,
-        nombre: persona.nombre,
-        curso: persona.curso,
-        empresa: persona.empresa
-      });
-
-      setMensaje({
-        tipo: "ok",
-        texto: `📚 ${persona.aula == "SULLANA"?"SULLANA":persona.aula} - ${persona.curso} \n😎 ${persona.nombre}\n🆔 ${dni}`
-      });
-
-      vibrar("ok");
-      setTimeout(() => {
-        setDniInput("");
-      }, 300);
-
-    } catch (error) {
-      console.error(error);
-      setMensaje({ tipo: "error", texto: "❌ Error DB" });
-      setTimeout(() => setMensaje(null), 2000);
+      vibrar("error");
+      setTimeout(() => setDniInput(""), 300);
+      return;
     }
-  };
 
+    // ✅ registrar asistencia
+    await addDoc(collection(db, "asistencia"), {
+      dni,
+      nombre: persona.nombre,
+      curso: persona.curso,
+      empresa: persona.empresa || "",
+      aula: persona.aula || "",
+      asistencia: "Presente",
+      hora: new Date().toLocaleTimeString(),
+
+      // 🔥 CLAVE
+      fecha: filtroGlobal.fecha,
+      turno: filtroGlobal.turno
+    });
+
+    await enviarMensaje("ok", {
+      aula: persona.aula,
+      nombre: persona.nombre,
+      curso: persona.curso,
+      empresa: persona.empresa
+    });
+
+    setMensaje({
+      tipo: "ok",
+      texto: `📚 ${persona.aula == "SULLANA" ? "SULLANA" : persona.aula} - ${persona.curso} \n😎 ${persona.nombre}\n🆔 ${dni}`
+    });
+
+    vibrar("ok");
+    setTimeout(() => setDniInput(""), 300);
+
+  } catch (error) {
+    console.error(error);
+    setMensaje({ tipo: "error", texto: "❌ Error DB" });
+    setTimeout(() => setMensaje(null), 2000);
+  }
+};
   const handleManual = () => {
     if (!dniInput) return;
     marcarAsistencia(dniInput);
     setDniInput("");
   };
 
-  // AGREGAR
  // AGREGAR
- const guardarNuevo = async () => {
+const guardarNuevo = async () => {
   if (!nuevo.dni || !nuevo.nombre || !nuevo.curso || !nuevo.empresa || !nuevo.aula) {
     setErrorForm("❌ Todos los campos son obligatorios");
     setTimeout(() => setErrorForm(null), 2000);
+    return;
+  }
+
+  if (!filtroGlobal.fecha) {
+    setErrorForm("❌ Selecciona fecha");
     return;
   }
 
@@ -254,9 +224,14 @@ function App() {
     curso: nuevo.curso,
     empresa: nuevo.empresa,
     aula: nuevo.aula,
+
     asistencia: "Adicional",
+
     hora: new Date().toLocaleTimeString(),
-    fecha: new Date().toISOString()
+
+    // 🔥 CLAVE
+    fecha: filtroGlobal.fecha,
+    turno: filtroGlobal.turno
   });
 
   await enviarMensaje("additional", {
@@ -271,29 +246,108 @@ function App() {
     texto: `✅ Agregado: ${nuevo.nombre}`
   });
 
-  setTimeout(() => setMensaje(null), 2000);
+  // setTimeout(() => setMensaje(null), 2000);
 
   setNuevo({ dni: "", nombre: "", curso: "", empresa: "", aula: "" });
   setMostrarModal(false);
 };
   // EXPORTAR
-  const exportar = () => {
-    const data = lista.map((p) => ({
-      DNI: p.dni,
-      NOMBRE: p.nombre,
-      CURSO: p.curso,
-      EMPRESA: p.empresa,
-      AULA: p.aula,
-      ASISTENCIA: p.asistencia,
-      HORA: p.hora
-    }));
+  // const exportar = () => {
+  //   const data = lista.map((p) => ({
+  //     DNI: p.dni,
+  //     NOMBRE: p.nombre,
+  //     CURSO: p.curso,
+  //     EMPRESA: p.empresa,
+  //     AULA: p.aula,
+  //     ASISTENCIA: p.asistencia,
+  //     HORA: p.hora
+  //   }));
 
+  //   const ws = XLSX.utils.json_to_sheet(data);
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "ASISTENCIA");
+
+  //   XLSX.writeFile(wb, "asistencia.xlsx");
+  // };
+
+ const exportar = async () => {
+  if (!filtroGlobal.fecha) {
+    alert("Selecciona fecha");
+    return;
+  }
+
+  try {
+    // 🔥 TRAER TODO EL DÍA (AMBOS TURNOS)
+    const qProg = query(
+      collection(db, "programados"),
+      where("fecha", "==", filtroGlobal.fecha)
+    );
+
+    const qAsis = query(
+      collection(db, "asistencia"),
+      where("fecha", "==", filtroGlobal.fecha)
+    );
+
+    const [snapProg, snapAsis] = await Promise.all([
+      getDocs(qProg),
+      getDocs(qAsis)
+    ]);
+
+    const programadosAll = snapProg.docs.map(doc => doc.data());
+    const asistenciaAll = snapAsis.docs.map(doc => doc.data());
+
+    // 🔥 BASE (PROGRAMADOS + ESTADO)
+    const dataBase = programadosAll.map(p => {
+      const asistente = asistenciaAll.find(a => a.dni === p.dni);
+
+      return {
+        DNI: p.dni,
+        NOMBRE: p.nombre,
+        EMPRESA: p.empresa || "",
+        CURSO: p.curso,
+        AULA: p.aula || "",
+        TURNO: p.turno,
+        ESTADO: asistente ? asistente.asistencia : "FALTA",
+        FECHA: p.fecha,
+        HORA: asistente?.hora || ""
+      };
+    });
+
+    // 🔥 ADICIONALES (NO PROGRAMADOS)
+    const adicionales = asistenciaAll
+      .filter(a => a.asistencia === "Adicional")
+      .filter(a => !programadosAll.some(p => p.dni === a.dni))
+      .map(a => ({
+        DNI: a.dni,
+        NOMBRE: a.nombre,
+        EMPRESA: a.empresa || "",
+        CURSO: a.curso,
+        AULA: a.aula || "",
+        TURNO: a.turno,
+        ESTADO: "ADICIONAL",
+        FECHA: a.fecha,
+        HORA: a.hora || ""
+      }));
+
+    const data = [...dataBase, ...adicionales];
+
+    // 📁 EXCEL
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "ASISTENCIA");
 
-    XLSX.writeFile(wb, "asistencia.xlsx");
-  };
+    XLSX.utils.book_append_sheet(wb, ws, "REPORTE");
+
+    XLSX.writeFile(
+      wb,
+      `reporte_asistencia_${filtroGlobal.fecha}.xlsx`
+    );
+
+  } catch (error) {
+    console.error(error);
+    alert("Error exportando");
+  }
+};
+
 
   const total = programados.length;
   const presentes = lista.filter(p => p.asistencia === "Presente").length;
@@ -398,17 +452,6 @@ const formatoNombre = (texto) => {
     .join(" ");
 };
 
-// const enviarMensaje = async (tipo, data) => {
-//   try {
-//     await addDoc(collection(db, "mensajes"), {
-//       tipo,
-//       data, // 👈 objeto estructurado
-//       fecha: serverTimestamp()
-//     });
-//   } catch (e) {
-//     console.error("Error enviando mensaje:", e);
-//   }
-// };
 
 const enviarMensaje = async (tipo, data) => {
   try {
@@ -450,14 +493,30 @@ const enviarMensaje = async (tipo, data) => {
         <img src={logoMin}alt="logo" className="d-block d-sm-none" style={{ height: "45px" }}/>
       </div>
       <h4 className="mb-4 text-center fw-bold text-primary">ASISTENCIA ERS</h4>
+      <div className="d-flex gap-2 mb-3">
+  <input
+    type="date"
+    className="form-control"
+    value={filtroGlobal.fecha}
+    onChange={(e) => (
+      setFiltroGlobal({ ...filtroGlobal, fecha: e.target.value }),
+      setMensaje(null))
+    }
+  />
 
-      {/* <div className="d-flex mb-3"> */}
-      <div className="d-flex mb-3 d-none">
-        <input type="file" onChange={importarExcel} className="form-control"/>
-        <button className="btn btn-warning ms-2" onClick={subirProgramados}>
-          <span className="fw-semibold">☁️&nbsp;Subir</span>
-        </button>
-      </div>
+  <select
+    className="form-control"
+    value={filtroGlobal.turno}
+    onChange={(e) => (
+      setFiltroGlobal({ ...filtroGlobal, turno: e.target.value }),
+      setMensaje(null))
+    }
+  >
+    <option value="mañana">Mañana</option>
+    <option value="tarde">Tarde</option>
+  </select>
+</div>
+
       {mensaje && (
         <div className={`alert d-flex justify-content-center ${
           mensaje.tipo === "ok" ? "alert-success" :

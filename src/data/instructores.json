@@ -1,0 +1,14 @@
+[
+    { "id": 1, "nombre": "ANTONIO DE LA ROSA", "foto": "/instructores/adr.png" },
+    { "id": 2, "nombre": "DAVID DIAZ", "foto": "/instructores/dda.png" },
+    { "id": 3, "nombre": "EDWIN DIAZ", "foto": "" },
+    { "id": 4, "nombre": "HERNAN ESPINOZA", "foto": "/instructores/hec.png" },
+    { "id": 5, "nombre": "LEONARDO MORENO", "foto": "" },
+    { "id": 6, "nombre": "LUISA NARRO", "foto": "/instructores/lnl.png" },
+    { "id": 7, "nombre": "MANUEL CORREA", "foto": "/instructores/manuel.png" },
+    { "id": 8, "nombre": "JORGE PANTA", "foto": "" },
+    { "id": 9, "nombre": "JORGE ORTIZ", "foto": "/instructores/joo.png" },
+    { "id": 10, "nombre": "OSWALDO QUIROGA", "foto": "" },
+    { "id": 11, "nombre": "VERUSKA CAMACHO", "foto": "" },
+    { "id": 12, "nombre": "WALTER ALVAREZ", "foto": "" }
+]

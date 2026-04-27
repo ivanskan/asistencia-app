@@ -5,7 +5,8 @@ import {
   onSnapshot,
   query,
   orderBy,
-  limit
+  limit,
+  where
 } from "firebase/firestore";
 import "./TVMIN.css";
 import logo from "/src/assets/ERS-logo.png";
@@ -36,20 +37,40 @@ const idleTimer = useRef(null);
   }, []);
 
   // 🔥 programados
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "programados"), (snapshot) => {
-      setProgramados(snapshot.docs.map(doc => doc.data()));
-    });
-    return () => unsub();
-  }, []);
+useEffect(() => {
+  const fechaHoy = getFechaHoy();
+  const turnoActual = getTurnoActual();
+
+  const q = query(
+    collection(db, "programados"),
+    where("fecha", "==", fechaHoy),
+    where("turno", "==", turnoActual)
+  );
+
+  const unsub = onSnapshot(q, (snapshot) => {
+    setProgramados(snapshot.docs.map(doc => doc.data()));
+  });
+
+  return () => unsub();
+}, []);
 
   // asistencia
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "asistencia"), (snapshot) => {
-      setAsistencia(snapshot.docs.map(doc => doc.data()));
-    });
-    return () => unsub();
-  }, []);
+useEffect(() => {
+  const fechaHoy = getFechaHoy();
+  const turnoActual = getTurnoActual();
+
+  const q = query(
+    collection(db, "asistencia"),
+    where("fecha", "==", fechaHoy),
+    where("turno", "==", turnoActual)
+  );
+
+  const unsub = onSnapshot(q, (snapshot) => {
+    setAsistencia(snapshot.docs.map(doc => doc.data()));
+  });
+
+  return () => unsub();
+}, []);
 
   // 🔊 audio
 const audios = {
@@ -107,6 +128,8 @@ useEffect(() => {
   return () => unsub();
 }, []);
 
+// QUEUE
+
 useEffect(() => {
   if (procesando.current) return;
   if (colaMensajes.length === 0) return;
@@ -146,9 +169,14 @@ useEffect(() => {
 
     cursos[key].push({
       ...p,
-      estado: presente ? "Presente" : "Falta"
+      estado: presente ? "Presente" : "Falta",
+       instructorFoto: p.instructorFoto,
+       instructorNombre: p.instructorNombre
     });
+  
   });
+
+
 
   // 🔥 AGREGAR ADICIONALES (CLAVE)
 asistencia.forEach(a => {
@@ -201,6 +229,24 @@ useEffect(() => {
   setModoIdle(true);
 }, []);
 
+
+const getTurnoActual = () => {
+  const hora = new Date().getHours();
+
+  if (hora < 13) return "mañana";
+  return "tarde";
+};
+
+const getFechaHoy = () => {
+  const hoy = new Date();
+
+  const year = hoy.getFullYear();
+  const month = (hoy.getMonth() + 1).toString().padStart(2, "0");
+  const day = hoy.getDate().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day}`; // 👈 ESTO ES CLAVE
+};
+
   return (
     <div className="tv-min-container">
       <div className="tv-min-body">
@@ -212,34 +258,65 @@ useEffect(() => {
             <input type="text" className="input-hide"/>
           </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th className="col-min-curso">CURSO</th>
-                <th className="text-end">AULA</th>
-                <th className="text-end">ASIST</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cursosArray.map(([key, lista], i) => {
-                const [curso, aula] = key.split("||");
-                const presentes = lista.filter(
-                  p => p.estado === "Presente" || p.estado === "Adicional"
-                  ).length;
+      <table>
+  <thead>
+    <tr>
+      <th>FOTO</th>
+      <th>INSTRUCTOR</th>
+      <th className="col-min-curso">CURSO</th>
+      <th className="text-end">AULA</th>
+      <th className="text-end">ASIST</th>
+    </tr>
+  </thead>
 
-                return (
-                  <tr key={i}>
-                    <td className="col-min-curso">{curso}</td>
-                    <td className="col-min-aula text-end">{aula}</td>
-                    <td className="col-min-asist text-end">
-                      {presentes}/{lista.length}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+  <tbody>
+    {cursosArray.map(([key, lista], i) => {
+      const [curso, aula] = key.split("||");
 
+      const presentes = lista.filter(
+        (p) => p.estado === "Presente" || p.estado === "Adicional"
+      ).length;
+
+      // 👇 tomamos el primero como referencia
+      const instructorFoto = lista[0]?.instructorFoto;
+      const instructorNombre = lista[0]?.instructorNombre;
+
+      return (
+        <tr key={i}>
+          {/* FOTO */}
+          <td className="col-min-foto">
+            {instructorFoto ? (
+              <img
+                src={instructorFoto}
+                alt={instructorNombre}
+                className="img-instructor"
+                onError={(e) => (e.target.style.display = "none")}
+              />
+            ) : (
+              <div className="img-placeholder">👤</div>
+            )}
+          </td>
+
+          {/* NOMBRE INSTRUCTOR */}
+          <td className="col-min-curso">
+            {instructorNombre || "SIN INSTRUCTOR"}
+          </td>
+
+          {/* CURSO */}
+          <td className="col-min-curso">{curso}</td>
+
+          {/* AULA */}
+          <td className="col-min-aula text-end">{aula}</td>
+
+          {/* ASISTENCIA */}
+          <td className="col-min-asist text-end">
+            {presentes}/{lista.length}
+          </td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
           <div className="table-foot mt-2">
             <span className="sumary">TOTAL</span>
             <span className="col-min-caption">

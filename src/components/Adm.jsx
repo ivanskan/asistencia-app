@@ -1,70 +1,78 @@
 import { useState, useEffect, useMemo } from "react";
 import * as XLSX from "xlsx";
 import { db } from "../firebase";
+import instructores from "/src/data/instructores.json";
 import {
   collection,
   addDoc,
-  onSnapshot
+  onSnapshot,
+  getDocs,
+  deleteDoc,
+  query,
+  where
 } from "firebase/firestore";
 
 function Adm() {
 
   const [excelData, setExcelData] = useState([]);
   const [programados, setProgramados] = useState([]);
-  const [detalle, setDetalle] = useState(null);
+  const [filaAbierta, setFilaAbierta] = useState(null);
 
   const [form, setForm] = useState({
     fecha: "",
     turno: "mañana",
     curso: "",
     aula: "",
-    instructor: ""
+    instructorId: ""
   });
 
-  // 📄 PAGINACIÓN
+  const [toast, setToast] = useState({
+  show: false,
+  message: "",
+  type: "success"
+});
+
   const [pagina, setPagina] = useState(1);
   const porPagina = 20;
 
-  // 🔥 ESCUCHAR PROGRAMADOS
+  // ESCUCHAR PROGRAMADOS
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "programados"), (snapshot) => {
-      const datos = snapshot.docs.map(doc => doc.data());
+      const datos = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
       setProgramados(datos);
     });
 
     return () => unsub();
   }, []);
 
-  // 📊 AGRUPAR PROGRAMACIONES
-  const programaciones = useMemo(() => {
-    const mapa = {};
+  // AGRUPAR
+ const programaciones = useMemo(() => {
+  const mapa = {};
 
-    programados.forEach(p => {
-      const key = `${p.fecha}_${p.turno}`;
+  programados.forEach(p => {
+    const key = `${p.fecha}_${p.turno}_${p.curso}`;
 
-      if (!mapa[key]) {
-        mapa[key] = {
-          fecha: p.fecha,
-          turno: p.turno,
-          total: 0,
-          cursos: new Set()
-        };
-      }
+    if (!mapa[key]) {
+      mapa[key] = {
+        fecha: p.fecha,
+        turno: p.turno,
+        curso: p.curso,
+        total: 0,
+        instructorNombre: p.instructorNombre || "—"
+      };
+    }
 
-      mapa[key].total += 1;
-      mapa[key].cursos.add(p.curso);
-    });
+    mapa[key].total += 1;
+  });
 
-    return Object.values(mapa)
-      .map(p => ({
-        ...p,
-        cursosCount: p.cursos.size
-      }))
-      .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  return Object.values(mapa).sort((a, b) =>
+    b.fecha.localeCompare(a.fecha)
+  );
+}, [programados]);
 
-  }, [programados]);
-
-  // 📄 PAGINADO
   const totalPaginas = Math.ceil(programaciones.length / porPagina);
 
   const programacionesPaginadas = programaciones.slice(
@@ -72,7 +80,7 @@ function Adm() {
     pagina * porPagina
   );
 
-  // 📥 IMPORTAR EXCEL
+  // IMPORTAR EXCEL
   const importarExcel = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -96,38 +104,58 @@ function Adm() {
     reader.readAsBinaryString(file);
   };
 
-  // ☁️ SUBIR
+  // SUBIR PROGRAMADOS
   const subir = async () => {
     if (!form.fecha || !form.curso || excelData.length === 0) {
       alert("Faltan datos");
       return;
     }
 
+    if (!form.instructorId) {
+      alert("Selecciona instructor");
+      return;
+    }
+
     try {
+      const instructorSeleccionado = instructores.find(
+        i => String(i.id) === String(form.instructorId)
+      );
+
+      if (!instructorSeleccionado) {
+        alert("Instructor no encontrado");
+        return;
+      }
+
       await Promise.all(
         excelData.map(p =>
           addDoc(collection(db, "programados"), {
             ...p,
-            ...form
+            fecha: form.fecha,
+            turno: form.turno,
+            curso: form.curso,
+            aula: form.aula,
+
+            // ✅ DATOS DEL INSTRUCTOR
+            instructorId: instructorSeleccionado.id,
+            instructorNombre: instructorSeleccionado.nombre,
+            instructorFoto: instructorSeleccionado.foto
           })
         )
       );
 
       alert(`✅ ${excelData.length} registros subidos`);
 
-      // 🔥 LIMPIAR TODO
       setExcelData([]);
+
       setForm({
         fecha: "",
         turno: "mañana",
         curso: "",
         aula: "",
-        instructor: ""
+        instructorId: ""
       });
 
       setPagina(1);
-
-      // limpiar input file
       document.querySelector('input[type="file"]').value = "";
 
     } catch (err) {
@@ -136,31 +164,59 @@ function Adm() {
     }
   };
 
-  const abrirDetalle = (prog) => {
+  const eliminarCursoDirecto = async (fecha, turno, curso) => {
+    try {
+      const qProg = query(
+        collection(db, "programados"),
+        where("fecha", "==", fecha),
+        where("turno", "==", turno),
+        where("curso", "==", curso)
+      );
 
-  const filtrados = programados.filter(
-    p => p.fecha === prog.fecha && p.turno === prog.turno
-  );
+      const snapProg = await getDocs(qProg);
 
-  const cursos = [...new Set(filtrados.map(p => p.curso))];
-  const aulas = [...new Set(filtrados.map(p => p.aula))];
-  const instructores = [...new Set(filtrados.map(p => p.instructor))];
+      const qAsis = query(
+        collection(db, "asistencia"),
+        where("fecha", "==", fecha),
+        where("turno", "==", turno),
+        where("curso", "==", curso)
+      );
 
-  setDetalle({
-    ...prog,
-    cursos,
-    aulas,
-    instructores,
-    lista: filtrados
-  });
-};
+      const snapAsis = await getDocs(qAsis);
+
+      const total = snapProg.size + snapAsis.size;
+
+      if (!window.confirm(`Eliminar ${total} registros de ${curso}?`)) return;
+
+      await Promise.all(snapProg.docs.map(doc => deleteDoc(doc.ref)));
+      await Promise.all(snapAsis.docs.map(doc => deleteDoc(doc.ref)));
+
+      setToast({
+        show: true,
+        message: `Curso ${curso} eliminado (${total})`,
+        type: "success"
+      });
+
+    } catch (err) {
+      console.error(err);
+      setToast({
+        show: true,
+        message: "Error eliminando curso",
+        type: "danger"
+      });
+    }
+  };
+  useEffect(() => {
+  if (pagina > totalPaginas) {
+    setPagina(1);
+  }
+}, [programaciones]);
 
   return (
     <div className="container py-3">
 
       <h4 className="mb-3">⚙️ Administración</h4>
 
-      {/* 📅 FECHA */}
       <input
         type="date"
         className="form-control mb-2"
@@ -168,7 +224,6 @@ function Adm() {
         onChange={(e) => setForm({ ...form, fecha: e.target.value })}
       />
 
-      {/* 🕐 TURNO */}
       <select
         className="form-control mb-2"
         value={form.turno}
@@ -178,7 +233,6 @@ function Adm() {
         <option value="tarde">Turno Tarde</option>
       </select>
 
-      {/* 🏫 CAMPOS */}
       <input
         className="form-control mb-2"
         placeholder="Curso"
@@ -193,151 +247,101 @@ function Adm() {
         onChange={(e) => setForm({ ...form, aula: e.target.value.toUpperCase() })}
       />
 
-      <input
+      {/* ✅ SELECT INSTRUCTOR */}
+      <select
         className="form-control mb-2"
-        placeholder="Instructor"
-        value={form.instructor}
-        onChange={(e) => setForm({ ...form, instructor: e.target.value.toUpperCase() })}
-      />
+        value={form.instructorId}
+        onChange={(e) =>
+          setForm({ ...form, instructorId: e.target.value })
+        }
+      >
+        <option value="">Seleccionar instructor</option>
+        {instructores.map((ins) => (
+          <option key={ins.id} value={ins.id}>
+            {ins.nombre}
+          </option>
+        ))}
+      </select>
 
-      {/* 📂 EXCEL */}
-      <input
-        type="file"
-        className="form-control mb-2"
-        onChange={importarExcel}
-      />
-
-      <button className="btn btn-success w-100" onClick={subir}>
-        ☁️ Subir Programados
-      </button>
-
-      {/* 👁️ PREVIEW */}
+      <input type="file" className="form-control mb-2" onChange={importarExcel} />
       {excelData.length > 0 && (
-        <div className="mt-2 alert alert-info py-2">
-          📄 {excelData.length} registros listos para subir
-        </div>
-      )}
+  <div className="alert alert-info py-2">
+    📊 {excelData.length} registros listos para subir
+  </div>
+)}
 
-      {/* 📋 TABLA PROGRAMACIONES */}
+    <button
+  className="btn btn-success w-100"
+  onClick={subir}
+  disabled={excelData.length === 0}
+>
+  ☁️ Subir Programados
+</button>
+
+      {/* TABLA */}
       <div className="mt-4">
         <h5>📅 Programaciones</h5>
 
-        <div className="table-responsive">
-          <table className="table table-bordered table-sm">
-            <thead className="table-dark">
-              <tr>
-                <th>Fecha</th>
-                <th>Turno</th>
-                <th>Cursos</th>
-                <th>Programados</th>
-              </tr>
-            </thead>
+        <table className="table table-bordered table-sm">
+<thead className="table-dark">
+  <tr>
+    <th>Fecha</th>
+    <th>Turno</th>
+    <th>Curso</th>
+    <th>Instructor</th>
+    <th>Programados</th>
+    <th>Acciones</th>
+  </tr>
+</thead>
 
-            <tbody>
-              {programacionesPaginadas.map((p, i) => (
-                <tr
-                    key={i}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => abrirDetalle(p)}
-                  >
-                  <td>{p.fecha}</td>
-                  <td>{p.turno}</td>
-                  <td>{p.cursosCount}</td>
-                  <td>{p.total}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+<tbody>
+  {programacionesPaginadas.map((p) => (
+    <tr key={`${p.fecha}-${p.turno}-${p.curso}`}>
+      <td>{p.fecha}</td>
+      <td>{p.turno}</td>
+      <td>{p.curso}</td>
+      <td>{p.instructorNombre}</td>
+      <td>{p.total}</td>
 
-        {detalle && (
-          <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
-            <div className="modal-dialog modal-lg">
-              <div className="modal-content p-3">
+      <td>
+        <button
+          className="btn btn-danger btn-sm"
+          onClick={() =>
+            eliminarCursoDirecto(p.fecha, p.turno, p.curso)
+          }
+        >
+          🗑️ Eliminar
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+</table>
+        <div className="d-flex justify-content-between align-items-center mt-2">
+  
+  <button
+    className="btn btn-sm btn-secondary"
+    disabled={pagina === 1}
+    onClick={() => setPagina(pagina - 1)}
+  >
+    ⬅ Anterior
+  </button>
 
-                <h5 className="mb-3">
-                  📅 {detalle.fecha} | 🕐 {detalle.turno}
-                </h5>
+  <span>
+    Página {pagina} de {totalPaginas}
+  </span>
 
-                <div className="mb-2">
-                  <b>👥 Programados:</b> {detalle.total}
-                </div>
+  <button
+    className="btn btn-sm btn-secondary"
+    disabled={pagina === totalPaginas}
+    onClick={() => setPagina(pagina + 1)}
+  >
+    Siguiente ➡
+  </button>
 
-                <div className="mb-2">
-                  <b>📚 Cursos:</b> {detalle.cursos.join(", ")}
-                </div>
-
-                <div className="mb-2">
-                  <b>🏫 Aulas:</b> {detalle.aulas.join(", ")}
-                </div>
-
-                <div className="mb-3">
-                  <b>👨‍🏫 Instructor(es):</b> {detalle.instructores.join(", ")}
-                </div>
-
-                {/* TABLA DETALLE */}
-                <div className="table-responsive">
-                  <table className="table table-sm table-bordered">
-                    <thead className="table-light">
-                      <tr>
-                        <th>DNI</th>
-                        <th>Nombre</th>
-                        <th>Empresa</th>
-                        <th>Curso</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detalle.lista.map((p, i) => (
-                        <tr key={i}>
-                          <td>{p.dni}</td>
-                          <td>{p.nombre}</td>
-                          <td>{p.empresa}</td>
-                          <td>{p.curso}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <button
-                  className="btn btn-secondary mt-3 w-100"
-                  onClick={() => setDetalle(null)}
-                >
-                  Cerrar
-                </button>
-
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 🔢 PAGINACIÓN */}
-        <div className="d-flex justify-content-between align-items-center">
-
-          <small>
-            Página {pagina} de {totalPaginas || 1}
-          </small>
-
-          <div>
-            <button
-              className="btn btn-sm btn-secondary me-2"
-              disabled={pagina === 1}
-              onClick={() => setPagina(pagina - 1)}
-            >
-              ←
-            </button>
-
-            <button
-              className="btn btn-sm btn-secondary"
-              disabled={pagina === totalPaginas || totalPaginas === 0}
-              onClick={() => setPagina(pagina + 1)}
-            >
-              →
-            </button>
-          </div>
-
-        </div>
+</div>
       </div>
+
 
     </div>
   );

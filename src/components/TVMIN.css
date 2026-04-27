@@ -365,3 +365,31 @@
   content: ":";
   margin-left: 4px;
 }
+
+.col-min-foto {
+  width: 45px;
+}
+
+.img-instructor {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgb(26, 219, 42);
+}
+
+.img-placeholder {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  border-radius: 50%;
+  font-size: 18px;
+}
+
+.inst-name {
+  font-size: .5rem;
+
+}
