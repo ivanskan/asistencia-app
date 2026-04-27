@@ -61,7 +61,8 @@ function Adm() {
         turno: p.turno,
         curso: p.curso,
         total: 0,
-        instructorNombre: p.instructorNombre || "—"
+        instructorNombre: p.instructorNombre || "—",
+        aula: p.aula
       };
     }
 
@@ -288,6 +289,7 @@ function Adm() {
     <th>Fecha</th>
     <th>Turno</th>
     <th>Curso</th>
+    <th>Aula</th>
     <th>Instructor</th>
     <th>Programados</th>
     <th>Acciones</th>
@@ -300,6 +302,7 @@ function Adm() {
       <td>{p.fecha}</td>
       <td>{p.turno}</td>
       <td>{p.curso}</td>
+       <td>{p.aula}</td>
       <td>{p.instructorNombre}</td>
       <td>{p.total}</td>
 
