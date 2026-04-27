@@ -21,10 +21,10 @@ export default function TVMIN() {
   const [animKey, setAnimKey] = useState(0);
   const [showSparkle, setShowSparkle] = useState(false);
   const [colaMensajes, setColaMensajes] = useState([]);
-const [mensajeActivo, setMensajeActivo] = useState(null);
-const procesando = useRef(false);
-const [modoIdle, setModoIdle] = useState(true);
-const idleTimer = useRef(null);
+  const [mensajeActivo, setMensajeActivo] = useState(null);
+  const procesando = useRef(false);
+  const [modoIdle, setModoIdle] = useState(true);
+  const idleTimer = useRef(null);
 
   const ultimoId = useRef(null); // 👈 evita repetir audio
 
