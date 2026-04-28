@@ -109,8 +109,9 @@
 
 /* DERECHA */
 .tv-min-right {
-  width: 500px;
-  /* min-width: 500px; */
+  width: 100%;
+  max-width: 500px;
+  min-width: 400px;
   padding: 25px;
   display: flex;
   justify-content: center;
@@ -131,7 +132,7 @@
   flex-direction: column;
   border-radius: 2rem;
   font-weight: 900;
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
   min-width: 400px;
 }

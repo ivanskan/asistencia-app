@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import logo from "/src/assets/ERS-logo.png";
-import qrEncuesta from "/src/assets/ERS-logo.png";
+import qrEncuesta from "/src/assets/qr-encuesta.png";
 
 const enlacesData = {
   encuesta: "https://forms.cloud.microsoft/r/7j2v1FivSZ",
