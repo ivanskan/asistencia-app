@@ -3,6 +3,7 @@ import App from "./App";
 import TVMIN from "./components/TVMIN";
 import Adm from "./components/Adm";
 import Enlaces from "./components/Enlaces";
+import Ticket from "./components/Ticket";
 
 function AppRouter() {
   return (
@@ -12,6 +13,7 @@ function AppRouter() {
         <Route path="/adm" element={<Adm />} />
         <Route path="/tvmin" element={<TVMIN />} />
         <Route path="/enlaces" element={<Enlaces />} />
+         <Route path="/ticket" element={<Ticket />} />
       </Routes>
     </BrowserRouter>
   );
