@@ -16,6 +16,9 @@ export default function Ticket() {
   const [tickets, setTickets] = useState([]);
   const [nombre, setNombre] = useState("");
   const [numero, setNumero] = useState("");
+  const [filtroNombre, setFiltroNombre] = useState("");
+const [filtroPago, setFiltroPago] = useState("todos"); // todos | pagados | nopagados
+const [filtroEntrega, setFiltroEntrega] = useState("todos"); // todos | entregados | noentregados
 
   // 🔴 REALTIME
   useEffect(() => {
@@ -98,40 +101,104 @@ const cambiarMetodo = async (ticket, metodo) => {
     (t) => t.pagado && t.metodoPago === "Efectivo"
   ).length;
 
+
+  const ticketsFiltrados = tickets.filter((t) => {
+  // 🔎 filtro nombre
+  const matchNombre = (t.nombre || "")
+    .toLowerCase()
+    .includes(filtroNombre.toLowerCase());
+
+  // 💳 filtro pago
+  const matchPago =
+    filtroPago === "todos" ||
+    (filtroPago === "pagados" && t.pagado) ||
+    (filtroPago === "nopagados" && !t.pagado);
+
+  // 🍗 filtro entrega
+  const matchEntrega =
+    filtroEntrega === "todos" ||
+    (filtroEntrega === "entregados" && t.recogido) ||
+    (filtroEntrega === "noentregados" && !t.recogido);
+
+  return matchNombre && matchPago && matchEntrega;
+});
+
   return (
-    <div style={{ padding: 20 }}>
-      <h2>🍗 Control Pollada</h2>
+    <div className="container-fluid" >
+      <h2 className="text-center py-3"> Control de Tickets</h2>
 
       {/* 📊 RESUMEN */}
-      <div style={{ display: "flex", gap: 20, marginBottom: 20, flexWrap: "wrap" }}>
-        <div>🎟️ Total: {total}</div>
-        <div>✅ Pagados: {pagados} / {total}</div>
-        <div>🍗 Recogidos: {recogidos} / {total}</div>
-        <div>💰 Total: S/ {totalRecaudado}</div>
-        <div>💳 Yape: S/ {yape * PRECIO}</div>
-        <div>💵 Efectivo: S/ {efectivo * PRECIO}</div>
+      <div className="bg-info border rounded p-1">
+        <div className="d-flex justify-content-between">
+          <span>Total: {total}</span>
+          <span>Recogidos: {recogidos} / {total}</span>
+          <span>Pagados: {pagados} / {total}</span>
+        </div>
+        <div className="d-flex justify-content-between my-2">
+          <span> Total: S/ {totalRecaudado}</span>
+          <span>Yape: S/ {yape * PRECIO}</span>
+          <span>Efectivo: S/ {efectivo * PRECIO}</span>
+         </div>
       </div>
 
       {/* ➕ CREAR */}
-      <div style={{ marginBottom: 20 }}>
-        <input
-          placeholder="Nombre"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
+     <div className="my-3 d-flex align-items-center gap-2 w-100">
+  
+      <input
+        className="form-control flex-grow-1"
+        placeholder="Nombre"
+        value={nombre}
+        onChange={(e) => setNombre(e.target.value)}
+      />
 
-        <input
-          type="number"
-          placeholder="N° Ticket"
-          value={numero}
-          onChange={(e) => setNumero(e.target.value)}
-          style={{ width: 120, marginLeft: 10 }}
-        />
+      <input
+        className="form-control text-center"
+        type="number"
+        placeholder="N°"
+        value={numero}
+        onChange={(e) => setNumero(e.target.value)}
+        style={{ maxWidth: "80px" }} // 👈 3-4 dígitos aprox
+      />
 
-        <button onClick={crearTicket} style={{ marginLeft: 10 }}>
-          Agregar
-        </button>
-      </div>
+      <button className="btn btn-primary" onClick={crearTicket}>
+        Agregar
+      </button>
+
+    </div>
+
+    <div className="mb-3 d-flex flex-wrap gap-2">
+
+  <input
+    className="form-control"
+    style={{ maxWidth: "200px" }}
+    placeholder="Buscar nombre"
+    value={filtroNombre}
+    onChange={(e) => setFiltroNombre(e.target.value)}
+  />
+
+  <select
+    className="form-select"
+    style={{ maxWidth: "150px" }}
+    value={filtroPago}
+    onChange={(e) => setFiltroPago(e.target.value)}
+  >
+    <option value="todos">Todos</option>
+    <option value="pagados">Pagados</option>
+    <option value="nopagados">No pagados</option>
+  </select>
+
+  <select
+    className="form-select"
+    style={{ maxWidth: "170px" }}
+    value={filtroEntrega}
+    onChange={(e) => setFiltroEntrega(e.target.value)}
+  >
+    <option value="todos">Todos</option>
+    <option value="entregados">Entregados</option>
+    <option value="noentregados">No entregados</option>
+  </select>
+
+</div>
 
       {/* 🧱 GRID */}
       <div
@@ -141,7 +208,7 @@ const cambiarMetodo = async (ticket, metodo) => {
           gap: 10
         }}
       >
-        {tickets.map((t) => (
+        {ticketsFiltrados.map((t) => (
           <div
             key={t.id}
             style={{
@@ -180,7 +247,7 @@ const cambiarMetodo = async (ticket, metodo) => {
 
             {/* SOLO 2 METODOS */}
             <div className="d-flex justify-content-between">
- <select
+            <select
               value={t.metodoPago}
               onChange={(e) => cambiarMetodo(t, e.target.value)}
             >
