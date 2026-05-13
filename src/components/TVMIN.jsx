@@ -265,7 +265,7 @@ const getFechaHoy = () => {
       <th>INSTRUCTOR</th>
       <th className="col-min-curso">CURSO</th>
       <th className="text-end">AULA</th>
-      <th className="text-end">ASIST</th>
+      <th className="text-end ms-1">ASIST</th>
     </tr>
   </thead>
 
