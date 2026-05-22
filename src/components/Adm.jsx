@@ -12,6 +12,9 @@ import {
   where
 } from "firebase/firestore";
 
+import cursos from "../data/cursos.json";
+import aulas from "../data/aulas.json";
+
 function Adm() {
 
   const [excelData, setExcelData] = useState([]);
@@ -238,15 +241,28 @@ function Adm() {
         className="form-control mb-2"
         placeholder="Curso"
         value={form.curso}
+        list="cursos"
         onChange={(e) => setForm({ ...form, curso: e.target.value.toUpperCase() })}
       />
+
+       <datalist id="cursos">
+        {cursos.map((curso) => (
+          <option key={curso.id} value={curso.nombre} />
+        ))}
+      </datalist> 
 
       <input
         className="form-control mb-2"
         placeholder="Aula"
         value={form.aula}
+        list="aulas"
         onChange={(e) => setForm({ ...form, aula: e.target.value.toUpperCase() })}
       />
+        <datalist id="aulas">
+        {aulas.map((aula) => (
+          <option key={aula.id} value={aula.nombre} />
+        ))}
+      </datalist> 
 
       {/* ✅ SELECT INSTRUCTOR */}
       <select

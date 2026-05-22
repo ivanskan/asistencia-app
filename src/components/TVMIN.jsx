@@ -265,7 +265,7 @@ const getFechaHoy = () => {
       <th>INSTRUCTOR</th>
       <th className="col-min-curso">CURSO</th>
       <th className="text-end">AULA</th>
-      <th className="text-end ms-1">ASIST</th>
+      <th className="text-end ms-2">ASIST</th>
     </tr>
   </thead>
 
@@ -309,7 +309,7 @@ const getFechaHoy = () => {
           <td className="col-min-aula text-end">{aula}</td>
 
           {/* ASISTENCIA */}
-          <td className="col-min-asist text-end">
+          <td className="col-min-asist text-end ms-2">
             {presentes}/{lista.length}
           </td>
         </tr>
