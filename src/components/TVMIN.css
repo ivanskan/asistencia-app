@@ -372,11 +372,10 @@
 }
 
 .img-instructor {
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgb(26, 219, 42);
 }
 
 .img-placeholder {
