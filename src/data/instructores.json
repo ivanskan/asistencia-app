@@ -1,15 +1,15 @@
 [
-    { "id": 1, "nombre": "ANTONIO DE LA ROSA", "foto": "/instructores/adr.png" },
-    { "id": 2, "nombre": "CESAR CABRERA", "foto": "/instructores/ccv.png" },
+    { "id": 1, "nombre": "ANTONIO DE LA ROSA", "foto": "/instructores/adr.webp" },
+    { "id": 2, "nombre": "CESAR CABRERA", "foto": "/instructores/ccv.webp" },
     { "id": 3, "nombre": "DAVID DIAZ", "foto": "/instructores/dda.png" },
-    { "id": 4, "nombre": "EDWIN DIAZ", "foto": "/instructores/edm.png" },
-    { "id": 5, "nombre": "HERNAN ESPINOZA", "foto": "/instructores/hec.png" },
-    { "id": 6, "nombre": "LEONARDO MORENO", "foto": "/instructores/lmf.png" },
-    { "id": 7, "nombre": "LUISA NARRO", "foto": "/instructores/lnl.png" },
+    { "id": 4, "nombre": "EDWIN DIAZ", "foto": "/instructores/edm.webp" },
+    { "id": 5, "nombre": "HERNAN ESPINOZA", "foto": "/instructores/hec.webp" },
+    { "id": 6, "nombre": "LEONARDO MORENO", "foto": "/instructores/lmf.webp" },
+    { "id": 7, "nombre": "LUISA NARRO", "foto": "/instructores/lnl.webp" },
     { "id": 8, "nombre": "MANUEL CORREA", "foto": "/instructores/mct.png" },
-    { "id": 9, "nombre": "JORGE PANTA", "foto": "/instructores/jpc.png" },
-    { "id": 10, "nombre": "JORGE ORTIZ", "foto": "/instructores/joo.png" },
-    { "id": 11, "nombre": "OSWALDO QUIROGA", "foto": "/instructores/oqc.png" },
-    { "id": 12, "nombre": "VERUSKA CAMACHO", "foto": "/instructores/vcb.png" },
-    { "id": 13, "nombre": "WALTER ALVAREZ", "foto": "/instructores/wap.png" }
+    { "id": 9, "nombre": "JORGE PANTA", "foto": "/instructores/jpc.webp" },
+    { "id": 10, "nombre": "JORGE ORTIZ", "foto": "/instructores/joo.webp" },
+    { "id": 11, "nombre": "OSWALDO QUIROGA", "foto": "/instructores/oqc.webp" },
+    { "id": 12, "nombre": "VERUSKA CAMACHO", "foto": "/instructores/vcb.webp" },
+    { "id": 13, "nombre": "WALTER ALVAREZ", "foto": "/instructores/wap.webp" }
 ]
