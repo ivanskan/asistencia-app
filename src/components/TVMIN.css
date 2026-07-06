@@ -332,8 +332,25 @@
 .idle-img {
   opacity: 0.7;
   max-width: 200px;
-  animation: fadeIn 0.8s ease;
+  /* animation: fadeIn 0.8s ease; */
+  animation: rebote 3s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
 }
+
+@keyframes rebote {
+  0% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    /* Mitad de la animación: la imagen sube y se estira ligeramente */
+    transform: translateY(-20px) scale(1, 1);
+  }
+  100% {
+    /* Final: la imagen vuelve a su posición original */
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+
 
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
