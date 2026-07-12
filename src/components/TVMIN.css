@@ -368,11 +368,36 @@
   100% { transform: translate(0, 0); }
 } */
 
-.idle-img {
+/* .idle-img {
   opacity: 0.7;
+    filter:
+        drop-shadow(0 0 20px rgba(255,255,255,.25))
+        brightness(1.03);
   max-width: 200px;
   animation: flotar 10s ease-in-out infinite alternate;
   transform-origin: center;
+  border-radius: 5%;
+} */
+
+.idle-img{
+    max-width:200px;
+
+    opacity:.6;
+
+    border-radius:25px;
+
+    animation:
+        flotar 10s ease-in-out infinite alternate,
+        respirar 6s ease-in-out infinite;
+
+    transition:opacity 1.2s ease;
+
+    filter:
+        drop-shadow(0 0 5px rgba(255,255,255,.25))
+        brightness(1.03);
+
+    -webkit-mask-image: radial-gradient(circle,#000 78%,transparent 100%);
+    mask-image: radial-gradient(circle,#000 78%,transparent 100%);
 }
 
 @keyframes flotar {

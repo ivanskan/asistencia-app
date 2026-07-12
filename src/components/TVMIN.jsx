@@ -11,6 +11,9 @@ import {
 import "./TVMIN.css";
 import logo from "/src/assets/ERS-logo.png";
 import eresito from "/src/assets/ersito.png";
+import eresitoAltura from "/src/assets/ersitoAltura-bgless.png";
+import eresitoPPA from "/src/assets/ersitoPPA-bgless.png";
+import eresitoPPCI from "/src/assets/ersitoPPCI-bgless.png";
 
 export default function TVMIN() {
   const [programados, setProgramados] = useState([]);
@@ -247,6 +250,63 @@ const getFechaHoy = () => {
   return `${year}-${month}-${day}`; // 👈 ESTO ES CLAVE
 };
 
+// const imagenIdle = (() => {
+//   const cursosHoy = programados.map(p =>
+//     (p.curso || "").toLowerCase()
+//   );
+
+//   if (cursosHoy.some(c => c.includes("trabajos en altura"))) {
+//     return eresitoAltura;
+//   }
+
+//   if (cursosHoy.some(c => c.includes("primeros auxilios"))) {
+//     return eresitoPPA;
+//   }
+
+//   if (
+//     cursosHoy.some(
+//       c =>
+//         c.includes("prevencion y proteccion contra incendio") ||
+//         c.includes("prevención y protección contra incendio")
+//     )
+//   ) {
+//     return eresitoPPCI;
+//   }
+
+//   return eresito;
+// })();
+
+const imagenIdle = (() => {
+  const cursosHoy = programados.map(p =>
+    (p.curso || "").toLowerCase()
+  );
+
+  const opciones = [];
+
+  if (cursosHoy.some(c => c.includes("trabajos en altura"))) {
+    opciones.push(eresitoAltura);
+  }
+
+  if (cursosHoy.some(c => c.includes("primeros auxilios"))) {
+    opciones.push(eresitoPPA);
+  }
+
+  if (
+    cursosHoy.some(
+      c =>
+        c.includes("prevencion y proteccion contra incendio") ||
+        c.includes("prevención y protección contra incendio")
+    )
+  ) {
+    opciones.push(eresitoPPCI);
+  }
+
+  if (opciones.length === 0) return eresito;
+
+  return opciones[Math.floor(Math.random() * opciones.length)];
+})();
+
+
   return (
     <div className="tv-min-container">
       <div className="tv-min-body">
@@ -351,7 +411,8 @@ const getFechaHoy = () => {
 
   {modoIdle ? (
     <div className="tv-idle">
-      <img src={eresito} alt="idle" className="idle-img" />
+      {/* <img src={eresito} alt="idle" className="idle-img" /> */}
+      <img src={imagenIdle} alt="idle" className="idle-img" />
     </div>
   ) : (
     <>
