@@ -31,6 +31,14 @@ export default defineConfig({
     })
   ],
    server: {
-    host: true
+    host: true,
+
+    proxy: {
+      "/Sistema": {
+        target: "https://ersperu.pe",
+        changeOrigin: true,
+        secure: true
+      }
+    }
   }
 })
