@@ -327,7 +327,8 @@ function AsistenciaV2() {
                 programados={programadosFiltrados}
             />
 
-            <ModalAdicional />
+            <ModalAdicional 
+            programados={programados} />
 
         </div>
 

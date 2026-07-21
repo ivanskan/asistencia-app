@@ -1,4 +1,96 @@
-function ModalAdicional() {
+import { useMemo, useState } from "react";
+
+function ModalAdicional({ programados }) {
+
+    const [formulario, setFormulario] = useState({
+
+        dni: "",
+        nombre: "",
+        empresa: "",
+        puesto: "",
+        curso: "",
+        aula: "",
+        horario_id: null
+
+    });
+
+    function cambiar(e) {
+
+        setFormulario((anterior) => ({
+
+            ...anterior,
+
+            [e.target.name]: e.target.value
+
+        }));
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sesiones únicas
+    |--------------------------------------------------------------------------
+    */
+
+    const sesiones = useMemo(() => {
+
+        return [...new Map(
+
+            programados.map((item) => [
+
+                item.horario_id,
+
+                {
+
+                    horario_id: item.horario_id,
+
+                    curso: item.curso,
+
+                    aula: item.aula
+
+                }
+
+            ])
+
+        ).values()];
+
+    }, [programados]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cursos únicos
+    |--------------------------------------------------------------------------
+    */
+
+    const cursos = useMemo(() => {
+
+        return [...new Set(
+
+            sesiones.map((s) => s.curso)
+
+        )];
+
+    }, [sesiones]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Aulas según el curso seleccionado
+    |--------------------------------------------------------------------------
+    */
+
+    const aulasCurso = useMemo(() => {
+
+        if (!formulario.curso) return [];
+
+        return sesiones.filter(
+
+            (s) => s.curso === formulario.curso
+
+        );
+
+    }, [sesiones, formulario.curso]);
+
+    console.table(sesiones);
 
     return (
 
@@ -31,27 +123,175 @@ function ModalAdicional() {
 
                     <div className="modal-body">
 
-                        <p className="text-muted mb-0">
+                        <div className="row g-3">
 
-                            Aquí construiremos el formulario.
+                            <div className="col-md-4">
 
-                        </p>
+                                <label className="form-label">
+
+                                    DNI
+
+                                </label>
+
+                                <input
+                                    className="form-control"
+                                    name="dni"
+                                    value={formulario.dni}
+                                    onChange={cambiar}
+                                />
+
+                            </div>
+
+                            <div className="col-md-8">
+
+                                <label className="form-label">
+
+                                    Apellidos y nombres
+
+                                </label>
+
+                                <input
+                                    className="form-control"
+                                    name="nombre"
+                                    value={formulario.nombre}
+                                    onChange={cambiar}
+                                />
+
+                            </div>
+
+                            <div className="col-md-6">
+
+                                <label className="form-label">
+
+                                    Empresa
+
+                                </label>
+
+                                <input
+                                    className="form-control"
+                                    name="empresa"
+                                    value={formulario.empresa}
+                                    onChange={cambiar}
+                                />
+
+                            </div>
+
+                            <div className="col-md-6">
+
+                                <label className="form-label">
+
+                                    Puesto (Opcional)
+
+                                </label>
+
+                                <input
+                                    className="form-control"
+                                    name="puesto"
+                                    value={formulario.puesto}
+                                    onChange={cambiar}
+                                />
+
+                            </div>
+
+                            <div className="col-md-6">
+
+                                <label className="form-label">
+
+                                    Curso
+
+                                </label>
+
+                                <select
+                                    className="form-select"
+                                    name="curso"
+                                    value={formulario.curso}
+                                    onChange={cambiar}
+                                >
+
+                                    <option value="">
+
+                                        Seleccione...
+
+                                    </option>
+
+                                    {cursos.map((curso) => (
+
+                                        <option
+                                            key={curso}
+                                            value={curso}
+                                        >
+
+                                            {curso}
+
+                                        </option>
+
+                                    ))}
+
+                                </select>
+
+                            </div>
+
+                            <div className="col-md-6">
+
+                                <label className="form-label">
+
+                                    Aula
+
+                                </label>
+
+                                <select
+                                    className="form-select"
+                                    name="aula"
+                                    value={formulario.aula}
+                                    onChange={cambiar}
+                                >
+
+                                    <option value="">
+
+                                        Seleccione...
+
+                                    </option>
+
+                                    {aulasCurso.map((item) => (
+
+                                        <option
+                                            key={item.horario_id}
+                                            value={item.aula}
+                                        >
+
+                                            {item.aula}
+
+                                        </option>
+
+                                    ))}
+
+                                </select>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
                     <div className="modal-footer">
 
                         <button
+                            type="button"
                             className="btn btn-secondary"
                             data-bs-dismiss="modal"
                         >
+
                             Cancelar
+
                         </button>
 
                         <button
+                            type="button"
                             className="btn btn-primary"
                         >
+
                             Registrar
+
                         </button>
 
                     </div>
