@@ -1,6 +1,15 @@
 import { useMemo, useState } from "react";
+import "./ModalAdicional.css";
 
-function ModalAdicional({ programados }) {
+function ModalAdicional({
+
+    programados,
+
+    onGuardar,
+
+    onClose
+
+}) {
 
     const [formulario, setFormulario] = useState({
 
@@ -113,20 +122,44 @@ function ModalAdicional({ programados }) {
 
 }
 
-    async function guardar() {
+function limpiarFormulario() {
 
-    console.log(formulario);
+    setFormulario({
+
+        dni: "",
+        nombre: "",
+        empresa: "",
+        puesto: "",
+        curso: "",
+        aula: "",
+        horario_id: null
+
+    });
 
 }
+
+async function guardar() {
+
+    const resp = await onGuardar(formulario);
+
+    if (!resp.success) return;
+
+    limpiarFormulario();
+
+}
+
 
     return (
 
         <div
-            className="modal fade"
-            id="modalAdicional"
-            tabIndex="-1"
-            aria-hidden="true"
-        >
+    className="modal-overlay"
+    onClick={onClose}
+>
+
+    <div
+        className="modal-window"
+        onClick={(e) => e.stopPropagation()}
+    >
 
             <div className="modal-dialog modal-lg">
 
@@ -134,20 +167,14 @@ function ModalAdicional({ programados }) {
 
                     <div className="modal-header">
 
-                        <h5 className="modal-title">
+                        <h5 className="modal-title mb-3">
 
                             Registrar participante adicional
 
                         </h5>
 
-                        <button
-                            type="button"
-                            className="btn-close"
-                            data-bs-dismiss="modal"
-                        />
-
                     </div>
-
+                
                     <div className="modal-body">
 
                         <div className="row g-3">
@@ -302,17 +329,19 @@ function ModalAdicional({ programados }) {
 
                     </div>
 
-                    <div className="modal-footer">
+                    <div className="modal-footer mt-3">
 
-                        <button
-                            type="button"
-                            className="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                        >
+                     <button
 
-                            Cancelar
+    className="btn btn-secondary"
 
-                        </button>
+    onClick={onClose}
+
+>
+
+    Cancelar
+
+</button>
 
                         <button
                             type="button"
@@ -332,6 +361,9 @@ function ModalAdicional({ programados }) {
             </div>
 
         </div>
+
+        </div>
+
 
     );
 

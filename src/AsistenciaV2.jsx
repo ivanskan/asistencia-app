@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 
 import { registrarAsistencia } from "./services/asistenciaService";
 import { obtenerProgramados } from "./services/programadosService";
+import { registrarAdicional as registrarAdicionalService } from "./services/adicionalService";
 
 import Header from "./components/asistencia/Header";
 import RegistroPanel from "./components/asistencia/RegistroPanel";
@@ -36,7 +37,8 @@ function AsistenciaV2() {
 
     const [programados, setProgramados] = useState([]);
 
-    const [participante, setParticipante] = useState(null);
+    // const [participante, setParticipante] = useState(null);
+    const [resultadoRegistro, setResultadoRegistro] = useState(null);
 
     const [mensaje, setMensaje] = useState({
         tipo: "",
@@ -54,6 +56,8 @@ function AsistenciaV2() {
         aula: ""
 
     });
+
+    const [mostrarModal, setMostrarModal] = useState(false);
 
     const programadosFiltrados = useMemo(() => {
 
@@ -154,7 +158,6 @@ function AsistenciaV2() {
             );
 
             setProgramados(lista);
-            console.log(lista.find(p => p.dni === "70214751"));
 
         } catch (error) {
 
@@ -165,67 +168,77 @@ function AsistenciaV2() {
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Registrar asistencia
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Mostrar resultado del registro
+|--------------------------------------------------------------------------
+*/
 
-    async function registrar(dni) {
+function mostrarResultado(resp) {
 
-        try {
+    setMensaje({
 
-            const resp = await registrarAsistencia(dni);
+        tipo: resp.status,
 
-            // console.log(resp);
-
-            setMensaje({
-                tipo: resp.success ? "success" : "danger",
-                texto: resp.message
-            });
-
-            if (resp.success) {
-
-                setParticipante(resp.participante);
-
-    setProgramados((anterior) => {
-
-    const nuevaLista = anterior.map((item) => {
-
-        if (
-            String(item.dni) === String(resp.participante.dni) &&
-            Number(item.horario_id) === Number(resp.participante.horario_id)
-        ) {
-
-            console.log("✅ CAMBIANDO ESTADO");
-
-            return {
-                ...item,
-                estado: ESTADOS.PRESENTE
-            };
-        }
-
-        return item;
+        texto: resp.message
 
     });
 
-    console.table(nuevaLista);
+    setResultadoRegistro({
 
-    return nuevaLista;
+        tipo: resp.status,
 
-});
-            } else {
+        mensaje: resp.message,
 
-                setParticipante(null);
+        participante: resp.participante ?? null
 
-            }
+    });
 
-        } catch (error) {
+}
 
-            console.error(error);
+
+const registrar = async (dni) => {
+
+    try {
+
+        const resp = await registrarAsistencia(dni);
+
+        mostrarResultado(resp);
+
+        if (resp.success) {
+
+            setProgramados((anterior) =>
+
+                actualizarEstadoParticipante(
+
+                    anterior,
+
+                    resp.participante,
+
+                    ESTADOS.PRESENTE
+
+                )
+
+            );
 
         }
 
+    } catch (error) {
+
+        console.error(error);
+
+        mostrarResultado({
+
+            status: "danger",
+
+            message: "Error al conectar con el servidor.",
+
+            participante: null
+
+        });
+
     }
+
+};
 
     /*
     |--------------------------------------------------------------------------
@@ -233,9 +246,7 @@ function AsistenciaV2() {
     |--------------------------------------------------------------------------
     */
 
- function actualizarEstadoParticipante(lista, participante, estado) {
-
-    // console.log("Participante recibido:", participante);
+function actualizarEstadoParticipante(lista, participante, estado) {
 
     return lista.map((item) => {
 
@@ -243,21 +254,14 @@ function AsistenciaV2() {
             String(item.dni) === String(participante.dni) &&
             Number(item.horario_id) === Number(participante.horario_id);
 
-        console.log({
-            tabla_dni: item.dni,
-            api_dni: participante.dni,
-            tabla_horario: item.horario_id,
-            api_horario: participante.horario_id,
-            coincide
-        });
-
         if (coincide) {
 
-            console.log("✅ ACTUALIZADO");
-
             return {
+
                 ...item,
+
                 estado
+
             };
 
         }
@@ -267,25 +271,56 @@ function AsistenciaV2() {
     });
 
 }
-    /*
-    |--------------------------------------------------------------------------
-    | Debug (temporal)
-    |--------------------------------------------------------------------------
-    */
 
-    // useEffect(() => {
 
-    //     console.table(programados);
+const registrarAdicional = async (datos) => {
 
-    // }, [programados]);
+    try {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Render
-    |--------------------------------------------------------------------------
-    */
+        const resp = await registrarAdicionalService(datos);
 
-    return (
+        mostrarResultado(resp);
+
+        if (!resp.success) {
+
+            return resp;
+
+        }
+
+        await cargarProgramados();
+
+        setMostrarModal(false);
+
+        return resp;
+
+    } catch (error) {
+
+        console.error(error);
+
+        mostrarResultado({
+
+            status: "danger",
+
+            message: "Error al registrar el participante.",
+
+            participante: null
+
+        });
+
+        return {
+
+            success: false,
+
+            status: "danger",
+
+            message: "Error al registrar."
+
+        };
+
+    }
+
+};
+return (
 
         <div className="container-fluid py-3">
 
@@ -304,21 +339,17 @@ function AsistenciaV2() {
             />
             <div className="mt-3">
 
-    <button
+        <button
+            className="btn btn-outline-primary"
+            onClick={() => setMostrarModal(true)}
+        >
 
-        className="btn btn-outline-primary"
+            + Registrar participante adicional
 
-        data-bs-toggle="modal"
+        </button>
+        
 
-        data-bs-target="#modalAdicional"
-
-    >
-
-        + Registrar participante adicional
-
-    </button>
-
-</div>
+        </div>
 
             <ResumenCards
 
@@ -337,20 +368,32 @@ function AsistenciaV2() {
 
 />
 
-            {participante && (
+           {resultadoRegistro && (
 
-                <UltimoRegistroCard
-                    participante={participante}
-                />
+    <UltimoRegistroCard
 
-            )}
+        resultado={resultadoRegistro}
+
+    />
+
+)}
 
             <ProgramadosTable
                 programados={programadosFiltrados}
             />
+{mostrarModal && (
 
-            <ModalAdicional 
-            programados={programados} />
+    <ModalAdicional
+
+        programados={programados}
+
+        onGuardar={registrarAdicional}
+
+        onClose={() => setMostrarModal(false)}
+
+    />
+
+)}
 
         </div>
 
