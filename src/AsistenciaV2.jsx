@@ -17,7 +17,16 @@ const ESTADOS = {
     ADICIONAL: "Adicional"
 };
 
+
 function AsistenciaV2() {
+
+    const [sesion, setSesion] = useState({
+
+    fecha: "",
+
+    turno: ""
+
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -103,6 +112,14 @@ function AsistenciaV2() {
             // console.log(resp);
 
             if (!resp.success) return;
+
+            setSesion({
+
+                fecha: resp.fecha,
+
+                turno: resp.turno
+
+            });
 
             const lista = resp.programados.flatMap((sesion) =>
 
@@ -273,8 +290,13 @@ function AsistenciaV2() {
         <div className="container-fluid py-3">
 
             <Header
-                fecha="17/07/2026"
-                turno="Mañana"
+              
+
+                    fecha={sesion.fecha}
+
+                    turno={sesion.turno}
+
+
             />
 
             <RegistroPanel

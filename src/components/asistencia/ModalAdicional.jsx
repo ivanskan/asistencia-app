@@ -90,7 +90,34 @@ function ModalAdicional({ programados }) {
 
     }, [sesiones, formulario.curso]);
 
-    console.table(sesiones);
+
+    function cambiarAula(e) {
+
+    const aula = e.target.value;
+
+    const sesion = aulasCurso.find(
+
+        (item) => item.aula === aula
+
+    );
+
+    setFormulario((anterior) => ({
+
+        ...anterior,
+
+        aula,
+
+        horario_id: sesion ? sesion.horario_id : null
+
+    }));
+
+}
+
+    async function guardar() {
+
+    console.log(formulario);
+
+}
 
     return (
 
@@ -243,8 +270,10 @@ function ModalAdicional({ programados }) {
                                     className="form-select"
                                     name="aula"
                                     value={formulario.aula}
-                                    onChange={cambiar}
+                                    onChange={cambiarAula}
                                 >
+
+                                
 
                                     <option value="">
 
@@ -288,6 +317,8 @@ function ModalAdicional({ programados }) {
                         <button
                             type="button"
                             className="btn btn-primary"
+
+                            onClick={guardar}
                         >
 
                             Registrar
