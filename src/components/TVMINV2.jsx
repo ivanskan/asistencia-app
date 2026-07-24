@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 
 import { obtenerResumen } from "../services/resumenService";
 import { obtenerUltimo } from "../services/ultimoService";
 
+import "./TVMIN.css";
+import logo from "/src/assets/ERS-logo.png";
+
 function TVMINV2() {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Estados
-    |--------------------------------------------------------------------------
-    */
+    
+
+    const [hora, setHora] = useState(new Date());
+    
+    const [resumen, setResumen] = useState([]);
+
+    const [ultimo, setUltimo] = useState(null);
 
     const [sesion, setSesion] = useState({
 
@@ -18,9 +23,23 @@ function TVMINV2() {
 
     });
 
-    const [resumen, setResumen] = useState([]);
+    const ultimoId = useRef(0);
+    const sonidos = useRef({});
 
-    const [ultimo, setUltimo] = useState(null);
+useEffect(() => {
+
+    const timer = setInterval(() => {
+
+        setHora(new Date());
+
+    }, 1000);
+
+    return () => clearInterval(timer);
+
+}, []);
+
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -28,35 +47,30 @@ function TVMINV2() {
     |--------------------------------------------------------------------------
     */
 
-    async function cargarResumen() {
+   async function cargarResumen() {
 
-        try {
+    try {
 
-            const resp = await obtenerResumen();
+        const resp = await obtenerResumen();
 
-            console.log("RESUMEN");
+        if (!resp.success) return;
 
-            console.log(resp);
+        setSesion({
 
-            if (!resp.success) return;
+            fecha: resp.data.fecha,
+            turno: resp.data.turno
 
-            setSesion({
+        });
 
-                fecha: resp.fecha,
-                turno: resp.turno
+        setResumen(resp.data);
 
-            });
+    } catch (error) {
 
-            // <-- Si tu endpoint usa otra propiedad aquí la cambiamos
-            setResumen(resp.resumen ?? []);
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
+        console.error(error);
 
     }
+
+}
 
     /*
     |--------------------------------------------------------------------------
@@ -64,29 +78,35 @@ function TVMINV2() {
     |--------------------------------------------------------------------------
     */
 
-    async function cargarUltimo() {
+async function cargarUltimo() {
 
-        try {
+    try {
 
-            const resp = await obtenerUltimo();
+        const resp = await obtenerUltimo();
 
-            console.log("ULTIMO");
+        if (!resp.success) return;
 
-            console.log(resp);
+        // Es el mismo registro
+        if (resp.id === ultimoId.current) {
 
-            if (!resp.success) return;
-
-            // <-- Si el endpoint devuelve "ultimo" en vez de "participante"
-            // simplemente cambia esta línea.
-            setUltimo(resp.participante ?? null);
-
-        } catch (error) {
-
-            console.error(error);
+            return;
 
         }
 
+        // Nuevo registro
+        ultimoId.current = resp.id;
+
+        setUltimo(resp);
+
+        await cargarResumen();
+
+    } catch (error) {
+
+        console.error(error);
+
     }
+
+}
 
     /*
     |--------------------------------------------------------------------------
@@ -102,51 +122,256 @@ function TVMINV2() {
 
     }, []);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Vista temporal
-    |--------------------------------------------------------------------------
-    */
+    useEffect(() => {
 
-    return (
+    const intervaloResumen = setInterval(() => {
 
-        <div className="container py-4">
+        cargarResumen();
 
-            <h2>TV MIN V2</h2>
+    }, 30000);
 
-            <hr />
+    const intervaloUltimo = setInterval(() => {
 
-            <h4>Sesión</h4>
+        cargarUltimo();
 
-            <pre>
+    }, 1000);
 
-                {JSON.stringify(sesion, null, 2)}
+    return () => {
 
-            </pre>
+        clearInterval(intervaloResumen);
 
-            <hr />
+        clearInterval(intervaloUltimo);
 
-            <h4>Resumen</h4>
+    };
 
-            <pre>
+}, []);
 
-                {JSON.stringify(resumen, null, 2)}
 
-            </pre>
+useEffect(() => {
 
-            <hr />
+    sonidos.current = {
 
-            <h4>Último registro</h4>
+        success: new Audio("/audio/success.mp3"),
 
-            <pre>
+        warning: new Audio("/audio/warning.mp3"),
 
-                {JSON.stringify(ultimo, null, 2)}
+        danger: new Audio("/audio/error.mp3")
 
-            </pre>
+    };
+
+}, []);
+
+
+  return (
+
+    <div className="tv-min-container">
+
+        <div className="tv-min-body">
+
+            {/* ==========================
+                IZQUIERDA
+            ========================== */}
+
+            <div className="tv-min-left">
+
+                <div className="d-flex align-items-center">
+
+                    <img
+                        src={logo}
+                        alt="logo"
+                        className="d-sm-block w-50"
+                    />
+
+                </div>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>FOTO</th>
+                            <th>INSTRUCTOR</th>
+                            <th className="col-min-curso">CURSO</th>
+                            <th className="text-end">AULA</th>
+                            <th className="text-end ps-2">ASIST</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {resumen.cursos?.map((item, i) => (
+
+                            <tr key={i}>
+
+                                <td className="col-min-foto">
+
+                                    <div className="img-placeholder">
+
+                                        👤
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+
+                                    {item.instructor}
+
+                                </td>
+
+                                <td className="col-min-curso">
+
+                                    {item.curso}
+
+                                </td>
+
+                                <td className="text-end">
+
+                                    {item.aula}
+
+                                </td>
+
+                                <td className="text-end">
+
+                                     {item.registrados}/{item.programados}
+
+                                </td>
+
+                            </tr>
+
+                        ))}
+
+                    </tbody>
+
+                </table>
+
+                <div className="table-foot mt-2">
+
+                    <span className="sumary">
+
+                        TOTAL
+
+                    </span>
+
+                    <span className="col-min-caption">
+
+                        {resumen.total_registrados}/
+                        {resumen.total_participantes}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            {/* ==========================
+                DERECHA
+            ========================== */}
+
+            <div>
+
+                <div className="tv-min-left-header">
+
+                    <div className="tv-min-title">
+
+                        ASISTENCIA
+
+                    </div>
+
+                    <div className="tv-min-clock">
+
+                        <div className="tv-min-clock-time">
+
+                            {hora.toLocaleTimeString()}
+
+                        </div>
+
+                        <div className="tv-min-clock-date">
+
+                            {hora
+                                .toLocaleDateString("es-PE", {
+
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric"
+
+                                })
+                                .toUpperCase()}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div className="tv-min-right">
+
+                    {ultimo && (
+
+                        <div className="tv-min-welcome tv-ok">
+
+                            <p className="tv-min-aula">
+
+                                AULA {ultimo.aula}
+
+                            </p>
+
+                            <div className="tv-min-grid">
+
+                                <span className="label">
+
+                                    NOMBRE
+
+                                </span>
+
+                                <span className="value">
+
+                                    {ultimo.nombre?.toUpperCase()}
+
+                                </span>
+
+                                <span className="label">
+
+                                    CURSO
+
+                                </span>
+
+                                <span className="value">
+
+                                    {ultimo.curso}
+
+                                </span>
+
+                                <span className="label">
+
+                                    EMPRESA
+
+                                </span>
+
+                                <span className="value">
+
+                                    {ultimo.empresa}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    )}
+
+                </div>
+
+            </div>
 
         </div>
 
-    );
+    </div>
+
+);
 
 }
 
