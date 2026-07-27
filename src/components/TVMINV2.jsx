@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 
 import { obtenerResumen } from "../services/resumenService";
 import { obtenerUltimo } from "../services/ultimoService";
+import { obtenerFotoInstructor } from "../helpers/instructorHelper";
 
 import "./TVMIN.css";
 import logo from "/src/assets/ERS-logo.png";
@@ -25,6 +26,7 @@ function TVMINV2() {
 
     const ultimoId = useRef(0);
     const sonidos = useRef({});
+
 
 useEffect(() => {
 
@@ -98,6 +100,8 @@ async function cargarUltimo() {
 
         setUltimo(resp);
 
+        reproducirSonido(resp.status);
+
         await cargarResumen();
 
     } catch (error) {
@@ -107,6 +111,32 @@ async function cargarUltimo() {
     }
 
 }
+
+function reproducirSonido(tipo) {
+
+    const original = sonidos.current[tipo];
+
+    if (!original) return;
+
+    const audio = original.cloneNode();
+
+    audio.play().catch(() => {});
+
+}
+
+// function reproducirSonido(tipo) {
+
+//     const audio = sonidos.current[tipo];
+
+//     if (!audio) return;
+
+//     audio.pause();
+
+//     audio.currentTime = 0;
+
+//     audio.play().catch(() => {});
+
+// }
 
     /*
     |--------------------------------------------------------------------------
@@ -145,6 +175,8 @@ async function cargarUltimo() {
     };
 
 }, []);
+
+
 
 
 useEffect(() => {
@@ -202,47 +234,57 @@ useEffect(() => {
 
                     <tbody>
 
-                        {resumen.cursos?.map((item, i) => (
+                        {resumen.cursos?.map((item, i) => {
 
-                            <tr key={i}>
+                            const fotoInstructor = obtenerFotoInstructor(item.instructor);
 
-                                <td className="col-min-foto">
+                            return (
 
-                                    <div className="img-placeholder">
+                                <tr key={i}>
 
-                                        👤
+                                    <td className="col-min-foto">
 
-                                    </div>
+                                        <img
+                                            src={fotoInstructor}
+                                            alt={item.instructor}
+                                            className="img-instructor"
+                                            onError={(e) => {
+                                                e.target.src = "/instructores/default.webp";
+                                            }}
+                                        />
 
-                                </td>
+                                    </td>
 
-                                <td>
+                                    <td>
 
-                                    {item.instructor}
+                                        {item.instructor}
 
-                                </td>
+                                    </td>
 
-                                <td className="col-min-curso">
+                                    <td className="col-min-curso">
 
-                                    {item.curso}
+                                        {item.curso}
 
-                                </td>
+                                    </td>
 
-                                <td className="text-end">
+                                    <td className="text-end">
 
-                                    {item.aula}
+                                        {item.aula}
 
-                                </td>
+                                    </td>
 
-                                <td className="text-end">
+                                    <td className="text-end">
 
-                                     {item.registrados}/{item.programados}
+                                        {item.registrados}/{item.programados}
 
-                                </td>
+                                    </td>
 
-                            </tr>
+                                </tr>
 
-                        ))}
+                            );
+
+                        })}
+
 
                     </tbody>
 

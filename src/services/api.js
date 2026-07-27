@@ -1,6 +1,13 @@
-// src/services/api.js
+//dev
 
-const API = "/Sistema/Api";
-// Luego solo cambiaremos esta línea por Hostinger.
+
+// const API = "/Sistema/Api";
+
+
+// prod
+
+const API = "https://ersperu.pe/Sistema/Api";
 
 export default API;
+
+

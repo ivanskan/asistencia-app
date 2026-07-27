@@ -1,15 +1,15 @@
 [
-    { "id": 1, "nombre": "ANTONIO DE LA ROSA", "foto": "/instructores/adr.webp" },
-    { "id": 2, "nombre": "CESAR CABRERA", "foto": "/instructores/ccv.webp" },
-    { "id": 3, "nombre": "DAVID DIAZ", "foto": "/instructores/dda.png" },
-    { "id": 4, "nombre": "EDWIN DIAZ", "foto": "/instructores/edm.webp" },
-    { "id": 5, "nombre": "HERNAN ESPINOZA", "foto": "/instructores/hec.webp" },
-    { "id": 6, "nombre": "LEONARDO MORENO", "foto": "/instructores/lmf.webp" },
-    { "id": 7, "nombre": "LUISA NARRO", "foto": "/instructores/lnl.webp" },
-    { "id": 8, "nombre": "MANUEL CORREA", "foto": "/instructores/mct.png" },
-    { "id": 9, "nombre": "JORGE PANTA", "foto": "/instructores/jpc.webp" },
-    { "id": 10, "nombre": "JORGE ORTIZ", "foto": "/instructores/joo.webp" },
-    { "id": 11, "nombre": "OSWALDO QUIROGA", "foto": "/instructores/oqc.webp" },
-    { "id": 12, "nombre": "VERUSKA CAMACHO", "foto": "/instructores/vcb.webp" },
-    { "id": 13, "nombre": "WALTER ALVAREZ", "foto": "/instructores/wap.webp" }
+    { "id": 1, "nombre": "DE LA ROSA SALDAÑA ANTONIO", "foto": "/instructores/adr.webp" },
+    { "id": 2, "nombre": "CABRERA VILLANUEVA CESAR", "foto": "/instructores/ccv.webp" },
+    { "id": 3, "nombre": "DIAZ ABANTO DAVID", "foto": "/instructores/dda.png" },
+    { "id": 4, "nombre": "DIAZ MORI EDWIN", "foto": "/instructores/edm.webp" },
+    { "id": 5, "nombre": "ESPINOZA CHANCAFE HERNAN", "foto": "/instructores/hec.webp" },
+    { "id": 6, "nombre": "MORENO FABERON LEONARDO", "foto": "/instructores/lmf.webp" },
+    { "id": 7, "nombre": "NARRO LEON LUISA", "foto": "/instructores/lnl.webp" },
+    { "id": 8, "nombre": "CORREA TAFUR MANUEL", "foto": "/instructores/mct.png" },
+    { "id": 9, "nombre": "PANTA CRUZ JORGE", "foto": "/instructores/jpc.webp" },
+    { "id": 10, "nombre": "ORTIZ Y ORTIZ JORGEs", "foto": "/instructores/joo.webp" },
+    { "id": 11, "nombre": "QUIROGA CACERES OSWALDO", "foto": "/instructores/oqc.webp" },
+    { "id": 12, "nombre": "CAMACHO BARTRA VERUSKA", "foto": "/instructores/vcb.webp" },
+    { "id": 13, "nombre": "ALVAREZ PEÑA WALTER", "foto": "/instructores/wap.webp" }
 ]
