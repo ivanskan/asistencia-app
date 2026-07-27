@@ -183,9 +183,9 @@ useEffect(() => {
 
     sonidos.current = {
 
-        success: new Audio("/audio/success.mp3"),
+        success: new Audio("/audio/bienvenido.mp3"),
 
-        warning: new Audio("/audio/warning.mp3"),
+        warning: new Audio("/audio/registrado.mp3"),
 
         danger: new Audio("/audio/error.mp3")
 
