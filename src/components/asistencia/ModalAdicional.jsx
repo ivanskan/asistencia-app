@@ -152,7 +152,7 @@ async function guardar() {
     return (
 
         <div
-    className="modal-overlay"
+    className="modal-overlay p-5"
     onClick={onClose}
 >
 

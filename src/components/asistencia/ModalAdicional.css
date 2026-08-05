@@ -18,7 +18,7 @@
 
 .modal-window {
 
-    width: min(900px, 95vw);
+    /* width: min(900px, 95vw); */
 
     max-height: 90vh;
 
@@ -32,7 +32,7 @@
 
     animation: slideDown .18s ease;
 
-    padding: 2rem 0;
+    padding: 2rem 1.5rem;
 
 }
 
